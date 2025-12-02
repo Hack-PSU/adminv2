@@ -79,7 +79,7 @@ export function AppShell({ children }: AppShellProps) {
                     className={cn(
                       "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                       isActive
-                        ? "bg-zinc-50 text-black-700"
+                        ? "bg-zinc-100 text-black-700"
                         : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
                     )}
                   >
