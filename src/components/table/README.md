@@ -1,17 +1,3 @@
-# DataTable Component
-
-A reusable, feature-rich table component for displaying and managing data.
-
-## Features
-
-- ✅ **Pagination**: Navigate through data with customizable page sizes (10, 25, 50, 100)
-- ✅ **Sorting**: Sort by any column (alphabetically or numerically, ascending/descending) - sorts all data, not just current page
-- ✅ **Search**: Global search that filters data starting with the search string
-- ✅ **Editable Cells**: Configure columns to be editable (text, number, or select inputs) or static (read-only)
-- ✅ **Row Selection**: Checkboxes for selecting individual rows or all rows
-- ✅ **Actions**: Save, Delete, and Refresh buttons
-- ✅ **Responsive**: Mobile-friendly design
-
 ## Usage
 
 ```tsx
