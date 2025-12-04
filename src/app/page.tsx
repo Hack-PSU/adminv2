@@ -11,8 +11,5 @@ export default function Home() {
     router.push("/hackers");
   }, [router]);
 
-  return (
-    <section className="space-y-4">
-    </section>
-  );
+  return <section className="space-y-4"></section>;
 }

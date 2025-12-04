@@ -4,30 +4,30 @@ import { FirebaseProvider } from "./FirebaseProvider";
 import { AuthGuard, Role } from "./AuthGuard";
 
 const queryClient = new QueryClient({
-	defaultOptions: {
-		queries: {
-			retry: false,
-		},
-	},
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
 });
 
 export default function LayoutProvider({
-	children,
+  children,
 }: {
-	children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-	return (
-		<FirebaseProvider>
-			<QueryClientProvider client={queryClient}>
-				<AuthGuard
-					config={{
-						minimumRole: Role.TEAM,
-						authServerUrl: process.env.NEXT_PUBLIC_AUTH_SERVICE_URL,
-					}}
-				>
-					{children}
-				</AuthGuard>
-			</QueryClientProvider>
-		</FirebaseProvider>
-	);
+  return (
+    <FirebaseProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthGuard
+          config={{
+            minimumRole: Role.TEAM,
+            authServerUrl: process.env.NEXT_PUBLIC_AUTH_SERVICE_URL,
+          }}
+        >
+          {children}
+        </AuthGuard>
+      </QueryClientProvider>
+    </FirebaseProvider>
+  );
 }

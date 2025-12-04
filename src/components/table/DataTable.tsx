@@ -34,7 +34,11 @@ export interface DataTableColumn<TData> {
   editable?: boolean;
   type?: "text" | "number" | "select";
   options?: Array<{ label: string; value: string | number }>;
-  cell?: (value: any, row: TData, onChange?: (value: any) => void) => React.ReactNode;
+  cell?: (
+    value: any,
+    row: TData,
+    onChange?: (value: any) => void,
+  ) => React.ReactNode;
 }
 
 interface DataTableProps<TData> {
@@ -68,7 +72,9 @@ export function DataTable<TData extends Record<string, any>>({
   const [data, setData] = useState<TData[]>(initialData);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
-  const [selectedRows, setSelectedRows] = useState<Set<string | number>>(new Set());
+  const [selectedRows, setSelectedRows] = useState<Set<string | number>>(
+    new Set(),
+  );
   const [pageSize, setPageSize] = useState(10);
   const [pageIndex, setPageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -79,7 +85,11 @@ export function DataTable<TData extends Record<string, any>>({
   }, [initialData]);
 
   // Handle cell value changes
-  const handleCellChange = (rowIndex: number, columnId: keyof TData, value: any) => {
+  const handleCellChange = (
+    rowIndex: number,
+    columnId: keyof TData,
+    value: any,
+  ) => {
     setData((old) =>
       old.map((row, index) => {
         if (index === rowIndex) {
@@ -89,7 +99,7 @@ export function DataTable<TData extends Record<string, any>>({
           };
         }
         return row;
-      })
+      }),
     );
   };
 
@@ -147,7 +157,9 @@ export function DataTable<TData extends Record<string, any>>({
         header: column.header,
         cell: ({ row, getValue }) => {
           const value = getValue();
-          const rowIndex = data.findIndex((d) => d[idField] === row.original[idField]);
+          const rowIndex = data.findIndex(
+            (d) => d[idField] === row.original[idField],
+          );
 
           // If custom cell renderer provided
           if (column.cell) {
@@ -155,8 +167,9 @@ export function DataTable<TData extends Record<string, any>>({
               value,
               row.original,
               column.editable
-                ? (newValue: any) => handleCellChange(rowIndex, column.accessorKey, newValue)
-                : undefined
+                ? (newValue: any) =>
+                    handleCellChange(rowIndex, column.accessorKey, newValue)
+                : undefined,
             );
           }
 
@@ -172,13 +185,18 @@ export function DataTable<TData extends Record<string, any>>({
                 value={value != null ? String(value) : ""}
                 onChange={(e) => {
                   const newValue =
-                    column.options?.find((opt) => String(opt.value) === e.target.value)?.value ?? e.target.value;
+                    column.options?.find(
+                      (opt) => String(opt.value) === e.target.value,
+                    )?.value ?? e.target.value;
                   handleCellChange(rowIndex, column.accessorKey, newValue);
                 }}
                 className="w-full rounded border border-zinc-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 {column.options.map((option) => (
-                  <option key={String(option.value)} value={String(option.value)}>
+                  <option
+                    key={String(option.value)}
+                    value={String(option.value)}
+                  >
                     {option.label}
                   </option>
                 ))}
@@ -191,7 +209,13 @@ export function DataTable<TData extends Record<string, any>>({
               <input
                 type="number"
                 value={value != null ? String(value) : ""}
-                onChange={(e) => handleCellChange(rowIndex, column.accessorKey, Number(e.target.value))}
+                onChange={(e) =>
+                  handleCellChange(
+                    rowIndex,
+                    column.accessorKey,
+                    Number(e.target.value),
+                  )
+                }
                 className="w-full rounded border border-zinc-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             );
@@ -202,7 +226,9 @@ export function DataTable<TData extends Record<string, any>>({
             <input
               type="text"
               value={value != null ? String(value) : ""}
-              onChange={(e) => handleCellChange(rowIndex, column.accessorKey, e.target.value)}
+              onChange={(e) =>
+                handleCellChange(rowIndex, column.accessorKey, e.target.value)
+              }
               className="w-full rounded border border-zinc-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           );
@@ -307,8 +333,15 @@ export function DataTable<TData extends Record<string, any>>({
         {/* Actions */}
         <div className="flex items-center gap-2">
           {onRefresh && (
-            <Button onClick={handleRefresh} disabled={isLoading} variant="outline" size="default">
-              <RefreshCw className={cn("h-4 w-4 mr-2", isLoading && "animate-spin")} />
+            <Button
+              onClick={handleRefresh}
+              disabled={isLoading}
+              variant="outline"
+              size="default"
+            >
+              <RefreshCw
+                className={cn("h-4 w-4 mr-2", isLoading && "animate-spin")}
+              />
               Refresh
             </Button>
           )}
@@ -347,11 +380,15 @@ export function DataTable<TData extends Record<string, any>>({
                       <div
                         className={cn(
                           "flex items-center gap-2",
-                          header.column.getCanSort() && "cursor-pointer select-none"
+                          header.column.getCanSort() &&
+                            "cursor-pointer select-none",
                         )}
                         onClick={header.column.getToggleSortingHandler()}
                       >
-                        {flexRender(header.column.columnDef.header, header.getContext())}
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                         {header.column.getCanSort() && (
                           <div className="flex flex-col">
                             {header.column.getIsSorted() === "asc" ? (
@@ -376,16 +413,28 @@ export function DataTable<TData extends Record<string, any>>({
           <tbody className="bg-white">
             {table.getRowModel().rows.length === 0 ? (
               <tr>
-                <td colSpan={tableColumns.length} className="px-4 py-8 text-center text-sm text-zinc-500">
+                <td
+                  colSpan={tableColumns.length}
+                  className="px-4 py-8 text-center text-sm text-zinc-500"
+                >
                   No data available
                 </td>
               </tr>
             ) : (
               table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className="border-b border-zinc-200 hover:bg-zinc-50">
+                <tr
+                  key={row.id}
+                  className="border-b border-zinc-200 hover:bg-zinc-50"
+                >
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-4 py-2 text-sm text-zinc-900">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    <td
+                      key={cell.id}
+                      className="px-4 py-2 text-sm text-zinc-900"
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </td>
                   ))}
                 </tr>
@@ -439,7 +488,12 @@ export function DataTable<TData extends Record<string, any>>({
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="icon" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
               <ChevronRight className="h-4 w-4" />
             </Button>
             <Button

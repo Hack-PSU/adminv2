@@ -1,46 +1,46 @@
 export interface CountsResponse {
-	count: number;
+  count: number;
 }
 
 export interface RegistrationCounts extends CountsResponse {
-	id: string;
-	name: string;
+  id: string;
+  name: string;
 }
 
 export interface GenderCounts extends CountsResponse {
-	gender: string;
+  gender: string;
 }
 
 export interface RaceCounts extends CountsResponse {
-	race: string;
+  race: string;
 }
 
 export interface AcademicYearCounts extends CountsResponse {
-	academicYear: string;
+  academicYear: string;
 }
 
 export interface CodingExpCounts extends CountsResponse {
-	codingExperience: string;
+  codingExperience: string;
 }
 
 export interface AnalyticsSummaryResponse {
-	registrations: RegistrationCounts[];
-	gender: GenderCounts[];
-	race: RaceCounts[];
-	academicYear: AcademicYearCounts[];
-	codingExp: CodingExpCounts[];
+  registrations: RegistrationCounts[];
+  gender: GenderCounts[];
+  race: RaceCounts[];
+  academicYear: AcademicYearCounts[];
+  codingExp: CodingExpCounts[];
 }
 
 export interface AnalyticsScansResponse {
-	id: string;
-	firstName: string;
-	lastName: string;
-	count: number;
+  id: string;
+  firstName: string;
+  lastName: string;
+  count: number;
 }
 
 export interface AnalyticsEventsResponse {
-	type: string;
-	id: string;
-	name: string;
-	count: number;
+  type: string;
+  id: string;
+  name: string;
+  count: number;
 }

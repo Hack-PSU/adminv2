@@ -1,7 +1,11 @@
 "use client";
 
 import { DataTable, DataTableColumn } from "@/components/table";
-import { useAllUsers, useDeleteUser, useUpdateUser } from "@/common/api/user/hook";
+import {
+  useAllUsers,
+  useDeleteUser,
+  useUpdateUser,
+} from "@/common/api/user/hook";
 import { UserEntity } from "@/common/api/user/entity";
 
 export default function HackersPage() {
@@ -36,7 +40,7 @@ export default function HackersPage() {
   const handleDelete = async (ids: Array<string | number>) => {
     // Delete all selected users
     await Promise.all(
-      ids.map((id) => deleteUserMutation.mutateAsync(String(id)))
+      ids.map((id) => deleteUserMutation.mutateAsync(String(id))),
     );
     // Refresh the list after deletion
     await refetch();
@@ -52,7 +56,8 @@ export default function HackersPage() {
         <header>
           <h1 className="text-2xl font-semibold text-zinc-900">Hackers</h1>
           <p className="text-sm text-zinc-500">
-            Manage hacker registrations, statuses, and communications from this workspace.
+            Manage hacker registrations, statuses, and communications from this
+            workspace.
           </p>
         </header>
         <div className="flex items-center justify-center py-12">
@@ -67,7 +72,8 @@ export default function HackersPage() {
       <header>
         <h1 className="text-2xl font-semibold text-zinc-900">Hackers</h1>
         <p className="text-sm text-zinc-500">
-          Manage hacker registrations, statuses, and communications from this workspace.
+          Manage hacker registrations, statuses, and communications from this
+          workspace.
         </p>
       </header>
       <DataTable
