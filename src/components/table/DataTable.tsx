@@ -127,6 +127,20 @@ export function DataTable<TData extends Record<string, any>>({
 
   // Create table columns
   const tableColumns = useMemo<ColumnDef<TData>[]>(() => {
+    const renderHoverEditable = (
+      display: React.ReactNode,
+      control: React.ReactNode,
+    ) => (
+      <div className="group relative min-h-[38px]">
+        <div className="flex h-full items-center px-2 py-1 text-sm text-zinc-900 transition-opacity group-hover:opacity-0">
+          {display}
+        </div>
+        <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100">
+          {control}
+        </div>
+      </div>
+    );
+
     const cols: ColumnDef<TData>[] = [
       {
         id: "select",
@@ -181,56 +195,67 @@ export function DataTable<TData extends Record<string, any>>({
           // Editable cells
           if (column.type === "select" && column.options) {
             return (
-              <select
-                value={value != null ? String(value) : ""}
-                onChange={(e) => {
-                  const newValue =
-                    column.options?.find(
-                      (opt) => String(opt.value) === e.target.value,
-                    )?.value ?? e.target.value;
-                  handleCellChange(rowIndex, column.accessorKey, newValue);
-                }}
-                className="w-full rounded border border-zinc-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              >
-                {column.options.map((option) => (
-                  <option
-                    key={String(option.value)}
-                    value={String(option.value)}
-                  >
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              renderHoverEditable(
+                column.options?.find(
+                  (opt) => String(opt.value) === String(value),
+                )?.label ?? String(value ?? ""),
+                <select
+                  value={value != null ? String(value) : ""}
+                  onChange={(e) => {
+                    const newValue =
+                      column.options?.find(
+                        (opt) => String(opt.value) === e.target.value,
+                      )?.value ?? e.target.value;
+                    handleCellChange(rowIndex, column.accessorKey, newValue);
+                  }}
+                  className="h-full w-full rounded border border-zinc-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  {column.options.map((option) => (
+                    <option
+                      key={String(option.value)}
+                      value={String(option.value)}
+                    >
+                      {option.label}
+                    </option>
+                  ))}
+                </select>,
+              )
             );
           }
 
           if (column.type === "number") {
             return (
-              <input
-                type="number"
-                value={value != null ? String(value) : ""}
-                onChange={(e) =>
-                  handleCellChange(
-                    rowIndex,
-                    column.accessorKey,
-                    Number(e.target.value),
-                  )
-                }
-                className="w-full rounded border border-zinc-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
+              renderHoverEditable(
+                String(value ?? ""),
+                <input
+                  type="number"
+                  value={value != null ? String(value) : ""}
+                  onChange={(e) =>
+                    handleCellChange(
+                      rowIndex,
+                      column.accessorKey,
+                      Number(e.target.value),
+                    )
+                  }
+                  className="h-full w-full rounded border border-zinc-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />,
+              )
             );
           }
 
           // Default: text input
           return (
-            <input
-              type="text"
-              value={value != null ? String(value) : ""}
-              onChange={(e) =>
-                handleCellChange(rowIndex, column.accessorKey, e.target.value)
-              }
-              className="w-full rounded border border-zinc-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
+            renderHoverEditable(
+              String(value ?? ""),
+              <input
+                type="text"
+                value={value != null ? String(value) : ""}
+                onChange={(e) =>
+                  handleCellChange(rowIndex, column.accessorKey, e.target.value)
+                }
+                className="h-full w-full rounded border border-zinc-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />,
+            )
           );
         },
         filterFn: startsWithFilter,
