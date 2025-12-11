@@ -28,6 +28,37 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// EditableCell component for mobile support
+const EditableCell: React.FC<{
+  display: React.ReactNode;
+  control: React.ReactNode;
+}> = ({ display, control }) => {
+  const [isEditing, setIsEditing] = useState(false);
+
+  return (
+    <div 
+      className="relative min-h-[2rem]"
+      onClick={() => !isEditing && setIsEditing(true)}
+    >
+      <div className="flex h-full items-center px-2 py-1 text-sm text-zinc-900 cursor-pointer hover:bg-zinc-50">
+        {display}
+      </div>
+      {isEditing && (
+        <div 
+          className="absolute inset-0"
+          onBlur={(e) => {
+            // Only close if we're not clicking within the control
+            if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+              setIsEditing(false);
+            }
+          }}
+        >
+          {control}
+        </div>
+      )}
+    </div>
+  );
+};
 export interface DataTableColumn<TData> {
   accessorKey: keyof TData;
   header: string;
@@ -130,16 +161,9 @@ export function DataTable<TData extends Record<string, any>>({
     const renderHoverEditable = (
       display: React.ReactNode,
       control: React.ReactNode,
-    ) => (
-      <div className="group relative min-h-[38px]">
-        <div className="flex h-full items-center px-2 py-1 text-sm text-zinc-900 transition-opacity group-hover:opacity-0">
-          {display}
-        </div>
-        <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100">
-          {control}
-        </div>
-      </div>
-    );
+    ) => {
+      return <EditableCell display={display} control={control} />;
+    };
 
     const cols: ColumnDef<TData>[] = [
       {
@@ -200,6 +224,7 @@ export function DataTable<TData extends Record<string, any>>({
                   (opt) => String(opt.value) === String(value),
                 )?.label ?? String(value ?? ""),
                 <select
+                  autoFocus
                   value={value != null ? String(value) : ""}
                   onChange={(e) => {
                     const newValue =
@@ -208,7 +233,7 @@ export function DataTable<TData extends Record<string, any>>({
                       )?.value ?? e.target.value;
                     handleCellChange(rowIndex, column.accessorKey, newValue);
                   }}
-                  className="h-full w-full rounded border border-zinc-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="h-full w-full rounded bg-white px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
                 >
                   {column.options.map((option) => (
                     <option
@@ -228,6 +253,7 @@ export function DataTable<TData extends Record<string, any>>({
               renderHoverEditable(
                 String(value ?? ""),
                 <input
+                  autoFocus
                   type="number"
                   value={value != null ? String(value) : ""}
                   onChange={(e) =>
@@ -237,7 +263,7 @@ export function DataTable<TData extends Record<string, any>>({
                       Number(e.target.value),
                     )
                   }
-                  className="h-full w-full rounded border border-zinc-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="h-full w-full rounded bg-white px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
                 />,
               )
             );
@@ -248,12 +274,13 @@ export function DataTable<TData extends Record<string, any>>({
             renderHoverEditable(
               String(value ?? ""),
               <input
+                autoFocus
                 type="text"
                 value={value != null ? String(value) : ""}
                 onChange={(e) =>
                   handleCellChange(rowIndex, column.accessorKey, e.target.value)
                 }
-                className="h-full w-full rounded border border-zinc-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="h-full w-full rounded bg-white px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
               />,
             )
           );
