@@ -15,8 +15,7 @@ export default function ManageClassesPage() {
 
   const columns: DataTableColumn<ExtraCreditClassEntity>[] = [
     { accessorKey: "name", header: "Class Name" },
-    { accessorKey: "instructor", header: "Instructor" },
-    { accessorKey: "capacity", header: "Capacity" },
+    { accessorKey: "hackathonId", header: "Hackathon ID" },
   ];
 
   const handleSave = async (data: ExtraCreditClassEntity[]) => {
@@ -25,9 +24,10 @@ export default function ManageClassesPage() {
       data.map((item) =>
         updateClassMutation.mutateAsync({
           id: item.id,
-          name: item.name,
-          instructor: item.instructor,
-          capacity: item.capacity,
+          data: {
+            name: item.name,
+            hackathonId: item.hackathonId,
+          },
         })
       )
     );
