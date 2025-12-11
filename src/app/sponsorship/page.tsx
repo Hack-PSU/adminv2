@@ -39,10 +39,6 @@ export default function SponsorshipPage() {
         "N/A"
       ),
     },
-    {
-      accessorKey: "order",
-      header: "Order",
-    },
   ];
 
   const handleSave = async (data: SponsorEntity[]) => {
@@ -70,9 +66,6 @@ export default function SponsorshipPage() {
       <section className="space-y-4">
         <header>
           <h1 className="text-2xl font-semibold text-zinc-900">Sponsorship</h1>
-          <p className="text-sm text-zinc-500">
-            Manage sponsor relationships, commitments, and deliverables.
-          </p>
         </header>
         <div className="flex items-center justify-center py-12">
           <div className="text-zinc-500">Loading sponsors...</div>
@@ -85,9 +78,6 @@ export default function SponsorshipPage() {
     <section className="space-y-4">
       <header>
         <h1 className="text-2xl font-semibold text-zinc-900">Sponsorship</h1>
-        <p className="text-sm text-zinc-500">
-          Manage sponsor relationships, commitments, and deliverables.
-        </p>
       </header>
       <DataTable
         data={sponsors}
