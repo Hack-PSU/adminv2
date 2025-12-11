@@ -294,9 +294,12 @@ export function DataTable<TData extends Record<string, any>>({
     setIsLoading(true);
     try {
       await onDelete(Array.from(selectedRows));
-      // Remove deleted rows from data
-      setData((old) => old.filter((row) => !selectedRows.has(row[idField])));
+      // Clear selection after delete attempt
       setSelectedRows(new Set());
+      // Refresh the data if onRefresh is provided
+      if (onRefresh) {
+        await onRefresh();
+      }
     } finally {
       setIsLoading(false);
     }

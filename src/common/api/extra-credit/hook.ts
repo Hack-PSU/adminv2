@@ -95,7 +95,7 @@ export function useDeleteExtraCreditClass() {
 }
 
 export function useAllExtraCreditAssignments() {
-  return useQuery<ExtraCreditAssignmentEntity[]>({
+  return useQuery<ECClassResponse[]>({
     queryKey: extraCreditQueryKeys.allAssignments,
     queryFn: getAllExtraCreditAssignments,
   });

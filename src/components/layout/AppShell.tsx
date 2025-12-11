@@ -28,7 +28,7 @@ const NAV_ITEMS = [
     href: "/organizer-applications",
     icon: FileText,
   },
-  { label: "Extra Credit", href: "/extra-credit", icon: Star },
+  { label: "Extra Credit", href: "/extra-credit/classes", icon: Star },
   { label: "Judging", href: "/judging", icon: Trophy },
   { label: "Sponsorship", href: "/sponsorship", icon: Handshake },
   { label: "Analytics", href: "/analytics", icon: BarChart2 },
