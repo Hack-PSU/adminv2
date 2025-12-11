@@ -34,7 +34,7 @@ export default function SettingsLayout({
         className={cn(
           "text-base font-semibold pb-2 transition-colors",
           active
-            ? "text-pink-600 border-b-2 border-pink-600"
+            ? "text-blue-600 border-b-2 border-blue-600"
             : "text-black"
         )}
       >

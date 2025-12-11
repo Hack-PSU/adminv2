@@ -32,7 +32,7 @@ const NAV_ITEMS = [
   { label: "Judging", href: "/judging", icon: Trophy },
   { label: "Sponsorship", href: "/sponsorship", icon: Handshake },
   { label: "Analytics", href: "/analytics", icon: BarChart2 },
-  { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Settings", href: "/settings/hackathon", icon: Settings },
 ] as const;
 
 type AppShellProps = {
