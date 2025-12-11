@@ -27,12 +27,30 @@ export default function EventsPage() {
     {
       accessorKey: "startTime",
       header: "Start Time",
-      cell: (value) => new Date(value as number).toLocaleString(),
+      cell: (value) => {
+        const date = new Date(value as number);
+        const dayOfWeek = date.toLocaleDateString("en-US", { weekday: "long" });
+        const time = date.toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        });
+        return `${dayOfWeek}, ${time}`;
+      },
     },
     {
       accessorKey: "endTime",
       header: "End Time",
-      cell: (value) => new Date(value as number).toLocaleString(),
+      cell: (value) => {
+        const date = new Date(value as number);
+        const dayOfWeek = date.toLocaleDateString("en-US", { weekday: "long" });
+        const time = date.toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        });
+        return `${dayOfWeek}, ${time}`;
+      },
     },
     {
       accessorKey: "type",
@@ -65,9 +83,6 @@ export default function EventsPage() {
       <section className="space-y-4">
         <header>
           <h1 className="text-2xl font-semibold text-zinc-900">Events</h1>
-          <p className="text-sm text-zinc-500">
-            Create and monitor the HackPSU schedule, sessions, and staffing needs.
-          </p>
         </header>
         <div className="flex items-center justify-center py-12">
           <div className="text-zinc-500">Loading events...</div>
@@ -80,9 +95,6 @@ export default function EventsPage() {
     <section className="space-y-4">
       <header>
         <h1 className="text-2xl font-semibold text-zinc-900">Events</h1>
-        <p className="text-sm text-zinc-500">
-          Create and monitor the HackPSU schedule, sessions, and staffing needs.
-        </p>
       </header>
       <DataTable
         data={events}
