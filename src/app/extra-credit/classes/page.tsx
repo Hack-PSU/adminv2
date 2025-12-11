@@ -39,14 +39,6 @@ export default function ManageClassesPage() {
     { accessorKey: "hackers", header: "Hackers" },
   ];
 
-  const handleSave = async (data: ExtraCreditClassWithCount[]) => {
-    // Do nothing - no fields are editable
-  };
-
-  const handleDelete = async (ids: Array<string | number>) => {
-    toast.error("Deletion is not allowed for extra credit classes");
-  };
-
   const handleRefresh = async () => {
     await refetch();
   };
@@ -68,8 +60,6 @@ export default function ManageClassesPage() {
       <DataTable
         data={classesWithCount}
         columns={columns}
-        onSave={handleSave}
-        onDelete={handleDelete}
         onRefresh={handleRefresh}
         idField="id"
       />

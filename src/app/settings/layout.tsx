@@ -19,7 +19,7 @@ export default function SettingsLayout({
   return (
     <section className="space-y-5">
       <header>
-        <h1 className="text-3xl font-semibold text-zinc-900">Settings</h1>
+        <h1 className="text-2xl font-semibold text-zinc-900">Settings</h1>
       </header>
 
 
