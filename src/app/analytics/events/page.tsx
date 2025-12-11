@@ -9,7 +9,7 @@ export default function AnalyticsEventsPage() {
   const columns: DataTableColumn<AnalyticsEventsResponse>[] = [
     { accessorKey: "name", header: "Name" },
     { accessorKey: "type", header: "Type" },
-    { accessorKey: "count", header: "Count" },
+    { accessorKey: "count", header: "Scans" },
   ];
 
   return (
