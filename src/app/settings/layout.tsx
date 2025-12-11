@@ -17,13 +17,11 @@ export default function SettingsLayout({
   ];
 
   return (
-    <section className="space-y-5">
-      <header>
+    <section className="space-y-4">
         <h1 className="text-2xl font-semibold text-zinc-900">Settings</h1>
-      </header>
 
 
-<nav className="flex gap-8 border-b pb-2">
+<nav className="flex space-x-4 border-b pb-2">
   {tabs.map((tab) => {
     const active = pathname.startsWith(tab.href);
 
