@@ -92,10 +92,6 @@ export default function LocationsPage() {
       <section className="space-y-4">
         <header>
           <h1 className="text-2xl font-semibold text-zinc-900">Locations</h1>
-          <p className="text-sm text-zinc-500">
-            Track venue spaces, room assignments, and satellite locations during
-            the event.
-          </p>
         </header>
         <div className="flex items-center justify-center py-12">
           <div className="text-zinc-500">Loading locations...</div>
@@ -109,10 +105,6 @@ export default function LocationsPage() {
       <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-2">
           <h1 className="text-2xl font-semibold text-zinc-900">Locations</h1>
-          <p className="text-sm text-zinc-500">
-            Track venue spaces, room assignments, and satellite locations during
-            the event.
-          </p>
         </div>
         <Button onClick={() => setShowAddModal(true)} className="w-full sm:w-auto">
           Add Location
