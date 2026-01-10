@@ -3,19 +3,20 @@
 import { DataTable, DataTableColumn } from "@/components/table";
 import {
   useAllApplications,
-	useApplicationsByTeam,
-	useApplication,
-  useSubmitApplication,
   useAcceptApplication,
   useRejectApplication,
-} from "@/common/api/organizer_applications/hook";
-import { OrganizerApplicationEntity } from "@/common/api/organizer_applications/entity";
+} from "@/common/api/organizer_applications";
+import { useState } from "react";
+import { Eye } from "lucide-react";
+import { OrganizerApplicationEntity, OrganizerTeam } from "@/common/api/organizer_applications";
+import ViewApplicationModal from "@/components/modal/ViewApplicationModal";
 
 export default function OrganizerApplicationsPage() {
   const {data: applications = [], isLoading, refetch } = useAllApplications();
   // I don't think we need mutations here for now, if we're simply just pasting the data onto the table
   const acceptApplicationMutation = useAcceptApplication();
   const rejectApplicationMutation = useRejectApplication();
+  const [selectedApplication, setSelectedApplication] = useState<OrganizerApplicationEntity | null>(null);
 
   // Define columns - all static (not editable)
   const columns: DataTableColumn<OrganizerApplicationEntity>[] = [
@@ -59,8 +60,20 @@ export default function OrganizerApplicationsPage() {
       accessorKey: "createdAt",
       header: "Applied On",
       cell: (value) => new Date(value).toLocaleDateString(),
-    }
-
+    },
+    {
+      accessorKey: "id",
+      header: "Actions",
+      cell: (_, row) => (
+        <button
+          onClick={() => setSelectedApplication(row)}
+          className="text-zinc-600 hover:text-zinc-900"
+          aria-label="View application"
+        >
+          <Eye className="h-4 w-4" />
+        </button>
+      ),
+    },
   ];
 
   const handleRefresh = async () => {
@@ -95,6 +108,26 @@ export default function OrganizerApplicationsPage() {
         columns={columns}
         onRefresh={handleRefresh}
         idField ="id"
+      />
+      <ViewApplicationModal
+        application={selectedApplication}
+        onClose={() => setSelectedApplication(null)}
+        onAccept={async (id, team: OrganizerTeam) => {
+          await acceptApplicationMutation.mutateAsync({
+            id,
+            data: { team },
+          });
+          await refetch();
+          setSelectedApplication(null);
+        }}
+        onReject={async (id, team: OrganizerTeam) => {
+          await rejectApplicationMutation.mutateAsync({
+            id,
+            data: { team },
+          });
+          await refetch();
+          setSelectedApplication(null);
+        }}
       />
     </section>
   );
