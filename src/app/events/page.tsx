@@ -7,8 +7,10 @@ import {
   useUpdateEvent,
 } from "@/common/api/event/hook";
 import { EventEntityResponse } from "@/common/api/event/entity";
+import { useRouter } from "next/navigation";
 
 export default function EventsPage() {
+  const router = useRouter();
   const { data: events = [], isLoading, refetch } = useAllEvents();
   const deleteEventMutation = useDeleteEvent();
   const updateEventMutation = useUpdateEvent();
@@ -81,8 +83,36 @@ export default function EventsPage() {
   if (isLoading) {
     return (
       <section className="space-y-4">
+<<<<<<< HEAD
         <header>
           <h1 className="text-2xl font-semibold text-zinc-900">Events</h1>
+=======
+        <header className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-zinc-900">Events</h1>
+            <p className="text-sm text-zinc-500">
+              Create HackPSU Events
+            </p>
+          </div>
+          <button
+            onClick={() => router.push("/events/create")}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Add Event
+          </button>
+>>>>>>> 986d64a (add event button)
         </header>
         <div className="flex items-center justify-center py-12">
           <div className="text-zinc-500">Loading events...</div>
@@ -93,8 +123,36 @@ export default function EventsPage() {
 
   return (
     <section className="space-y-4">
+<<<<<<< HEAD
       <header>
         <h1 className="text-2xl font-semibold text-zinc-900">Events</h1>
+=======
+      <header className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-zinc-900">Events</h1>
+          <p className="text-sm text-zinc-500">
+            Create HackPSU Events
+          </p>
+        </div>
+        <button
+          onClick={() => router.push("/events/create")}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+              clipRule="evenodd"
+            />
+          </svg>
+          Add Event
+        </button>
+>>>>>>> 986d64a (add event button)
       </header>
       <DataTable
         data={events}
