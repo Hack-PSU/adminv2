@@ -83,10 +83,6 @@ export default function EventsPage() {
   if (isLoading) {
     return (
       <section className="space-y-4">
-<<<<<<< HEAD
-        <header>
-          <h1 className="text-2xl font-semibold text-zinc-900">Events</h1>
-=======
         <header className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-zinc-900">Events</h1>
@@ -112,7 +108,6 @@ export default function EventsPage() {
             </svg>
             Add Event
           </button>
->>>>>>> 986d64a (add event button)
         </header>
         <div className="flex items-center justify-center py-12">
           <div className="text-zinc-500">Loading events...</div>
@@ -123,10 +118,6 @@ export default function EventsPage() {
 
   return (
     <section className="space-y-4">
-<<<<<<< HEAD
-      <header>
-        <h1 className="text-2xl font-semibold text-zinc-900">Events</h1>
-=======
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-zinc-900">Events</h1>
@@ -152,7 +143,6 @@ export default function EventsPage() {
           </svg>
           Add Event
         </button>
->>>>>>> 986d64a (add event button)
       </header>
       <DataTable
         data={events}
