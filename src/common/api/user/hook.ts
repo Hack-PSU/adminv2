@@ -12,13 +12,13 @@ import {
 import { UserEntity } from "./entity";
 
 export const userQueryKeys = {
-  all: ["users"] as const,
+  all: (active?: boolean) => ["users", active ?? "all"] as const,
   detail: (id: string) => ["user", id] as const,
 };
 
 export function useAllUsers(active?: boolean) {
   return useQuery<UserEntity[]>({
-    queryKey: userQueryKeys.all,
+    queryKey: userQueryKeys.all(active),
     queryFn: () => getAllUsers(active),
   });
 }
@@ -36,7 +36,7 @@ export function useCreateUser() {
   return useMutation({
     mutationFn: (newData: Omit<UserEntity, "id">) => createUser(newData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: userQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
 }
@@ -52,7 +52,7 @@ export function useUpdateUser() {
       data: Partial<Omit<UserEntity, "id">>;
     }) => updateUser(id, data),
     onSuccess: (updated) => {
-      queryClient.invalidateQueries({ queryKey: userQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({
         queryKey: userQueryKeys.detail(updated.id),
       });
@@ -66,7 +66,7 @@ export function useReplaceUser() {
     mutationFn: ({ id, data }: { id: string; data: Omit<UserEntity, "id"> }) =>
       replaceUser(id, data),
     onSuccess: (updated) => {
-      queryClient.invalidateQueries({ queryKey: userQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({
         queryKey: userQueryKeys.detail(updated.id),
       });
@@ -79,7 +79,7 @@ export function useDeleteUser() {
   return useMutation({
     mutationFn: (id: string) => deleteUser(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: userQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
 }

@@ -39,12 +39,6 @@ export default function OrganizerPage() {
 
   return (
     <section className="space-y-4">
-      <header>
-        <h1 className="text-2xl font-semibold text-zinc-900">Organizers</h1>
-        <p className="text-sm text-zinc-500">
-          Monitor the total scans performed by each organizer during the event.
-        </p>
-      </header>
       <DataTable
         data={organizers}
         columns={columns}
