@@ -14,13 +14,14 @@ import {
 } from "./entity";
 
 export const registrationQueryKeys = {
-  all: ["registrations"] as const,
+  all: (all?: boolean) =>
+    ["registrations", all ? "all" : "current"] as const,
   detail: (id: number) => ["registrations", id] as const,
 };
 
 export function useAllRegistrations(all?: boolean) {
   return useQuery<RegistrationEntity[]>({
-    queryKey: registrationQueryKeys.all,
+    queryKey: registrationQueryKeys.all(all),
     queryFn: () => getAllRegistrations(all),
   });
 }
@@ -38,7 +39,7 @@ export function useCreateRegistration() {
   return useMutation({
     mutationFn: (data: RegistrationCreateEntity) => createRegistration(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: registrationQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["registrations"] });
     },
   });
 }
@@ -54,7 +55,7 @@ export function useUpdateRegistration() {
       data: RegistrationUpdateEntity;
     }) => updateRegistration(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: registrationQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["registrations"] });
     },
   });
 }
@@ -70,7 +71,7 @@ export function useReplaceRegistration() {
       data: RegistrationCreateEntity;
     }) => replaceRegistration(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: registrationQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["registrations"] });
     },
   });
 }
@@ -80,7 +81,7 @@ export function useDeleteRegistration() {
   return useMutation({
     mutationFn: (id: number) => deleteRegistration(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: registrationQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["registrations"] });
     },
   });
 }

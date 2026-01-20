@@ -48,6 +48,7 @@ interface DataTableProps<TData> {
   onDelete?: (ids: Array<string | number>) => void | Promise<void>;
   onRefresh?: () => void | Promise<void>;
   idField?: keyof TData;
+  enableRowSelection?: boolean;
   className?: string;
 }
 
@@ -67,6 +68,7 @@ export function DataTable<TData extends Record<string, any>>({
   onDelete,
   onRefresh,
   idField = "id" as keyof TData,
+  enableRowSelection = true,
   className,
 }: DataTableProps<TData>) {
   const [data, setData] = useState<TData[]>(initialData);
@@ -105,6 +107,7 @@ export function DataTable<TData extends Record<string, any>>({
 
   // Toggle row selection
   const toggleRowSelection = (id: string | number) => {
+    if (!enableRowSelection) return;
     setSelectedRows((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(id)) {
@@ -118,6 +121,7 @@ export function DataTable<TData extends Record<string, any>>({
 
   // Toggle all rows selection
   const toggleAllRowsSelection = () => {
+    if (!enableRowSelection) return;
     if (selectedRows.size === data.length) {
       setSelectedRows(new Set());
     } else {
@@ -141,8 +145,10 @@ export function DataTable<TData extends Record<string, any>>({
       </div>
     );
 
-    const cols: ColumnDef<TData>[] = [
-      {
+    const cols: ColumnDef<TData>[] = [];
+
+    if (enableRowSelection) {
+      cols.push({
         id: "select",
         header: () => (
           <input
@@ -162,8 +168,8 @@ export function DataTable<TData extends Record<string, any>>({
         ),
         enableSorting: false,
         enableGlobalFilter: false,
-      },
-    ];
+      });
+    }
 
     columns.forEach((column) => {
       cols.push({
@@ -263,7 +269,7 @@ export function DataTable<TData extends Record<string, any>>({
     });
 
     return cols;
-  }, [columns, data, selectedRows, idField]);
+  }, [columns, data, selectedRows, idField, enableRowSelection]);
 
   const table = useReactTable({
     data,
@@ -376,7 +382,7 @@ export function DataTable<TData extends Record<string, any>>({
               Save
             </Button>
           )}
-          {onDelete && (
+          {onDelete && enableRowSelection && (
             <Button
               onClick={handleDelete}
               disabled={isLoading || selectedRows.size === 0}
