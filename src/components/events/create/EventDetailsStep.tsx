@@ -1,6 +1,6 @@
 "use client";
 
-import { EventFormData } from "@/app/events/createEvent/page";
+import { EventFormData } from "@/app/events/create/page";
 import { useAllLocations } from "@/common/api/location/hook";
 
 interface EventDetailsStepProps {

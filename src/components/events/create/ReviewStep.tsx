@@ -1,19 +1,23 @@
 "use client";
 
-import { EventFormData } from "@/app/events/createEvent/page";
+import { EventFormData } from "@/app/events/create/page";
 import { EventType } from "@/common/api/event/entity";
 
 interface ReviewStepProps {
   formData: EventFormData;
+  updateFormData: (data: Partial<EventFormData>) => void;
   onBack: () => void;
   onSubmit: () => void;
+  isLastStep: boolean;
   isSubmitting: boolean;
 }
 
 export function ReviewStep({
   formData,
+  updateFormData,
   onBack,
   onSubmit,
+  isLastStep,
   isSubmitting,
 }: ReviewStepProps) {
   const formatDateTime = (dateTimeStr: string) => {

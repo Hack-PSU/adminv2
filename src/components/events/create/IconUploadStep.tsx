@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { EventFormData } from "@/app/events/createEvent/page";
+import { EventFormData } from "@/app/events/create/page";
 
 interface IconUploadStepProps {
   formData: EventFormData;

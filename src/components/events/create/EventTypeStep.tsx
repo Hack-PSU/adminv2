@@ -1,6 +1,6 @@
 "use client";
 
-import { EventFormData } from "@/app/events/createEvent/page";
+import { EventFormData } from "@/app/events/create/page";
 import { EventType } from "@/common/api/event/entity";
 
 interface EventTypeStepProps {
