@@ -38,14 +38,16 @@ export default function OrganizerPage() {
   }
 
   return (
-    <section className="space-y-4">
+    <div className="space-y-4">
       <DataTable
         data={organizers}
         columns={columns}
-        onRefresh={handleRefresh}
+        onRefresh={async () => {
+          refetch()}
+        }
         idField="id"
       />
-    </section>
+    </div>
   );
 
 }
