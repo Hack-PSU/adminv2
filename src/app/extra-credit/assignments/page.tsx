@@ -4,30 +4,40 @@ import { DataTable, DataTableColumn } from "@/components/table";
 import {
   useAllExtraCreditAssignments,
 } from "@/common/api/extra-credit/hook";
-import { ECClassResponse } from "@/common/api/extra-credit/entity";
 import { useMemo } from "react";
 
-// Extended entity with hacker count
-interface ExtraCreditAssignmentWithMeta extends ECClassResponse {
-  hackers: number;
+// Flattened assignment showing each hacker with their assigned class
+interface HackerAssignment {
+  hackerId: string;
+  hackerName: string;
+  classId: number;
+  className: string;
 }
 
 export default function ManageAssignmentsPage() {
   const { data: assignments = [], isLoading: assignmentsLoading, refetch } = useAllExtraCreditAssignments();
 
-  // Add hacker count to each assignment
-  const assignmentsWithMeta = useMemo<ExtraCreditAssignmentWithMeta[]>(() => {
-    return assignments.map((assignment) => {
-      return {
-        ...assignment,
-        hackers: assignment?.users?.length || 0,
-      };
+  // Flatten the data: each row is a hacker with their assigned class
+  const hackerAssignments = useMemo<HackerAssignment[]>(() => {
+    const flattened: HackerAssignment[] = [];
+    
+    assignments.forEach((classData) => {
+      classData.users.forEach((user) => {
+        flattened.push({
+          hackerId: user.id,
+          hackerName: `${user.firstName} ${user.lastName}`,
+          classId: classData.id,
+          className: classData.name,
+        });
+      });
     });
+    
+    return flattened;
   }, [assignments]);
 
-  const columns: DataTableColumn<ExtraCreditAssignmentWithMeta>[] = [
-    { accessorKey: "name", header: "Class" },
-    { accessorKey: "hackers", header: "Hackers" },
+  const columns: DataTableColumn<HackerAssignment>[] = [
+    { accessorKey: "hackerName", header: "Hacker" },
+    { accessorKey: "className", header: "Assigned Class" },
   ];
 
   const handleRefresh = async () => {
@@ -49,10 +59,10 @@ export default function ManageAssignmentsPage() {
   return (
     <section className="space-y-4">
       <DataTable
-        data={assignmentsWithMeta}
+        data={hackerAssignments}
         columns={columns}
         onRefresh={handleRefresh}
-        idField="id"
+        idField="hackerId"
       />
     </section>
   );
