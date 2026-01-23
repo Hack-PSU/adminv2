@@ -1618,10 +1618,10 @@
   dependencies:
     cross-spawn "^7.0.6"
 
-"@posthog/types@1.333.0":
-  version "1.333.0"
-  resolved "https://registry.yarnpkg.com/@posthog/types/-/types-1.333.0.tgz#defa7290058ca3c68bfb61e6a44d348e3edc9448"
-  integrity sha512-9Wg/2ez+EZh6NmtOjhtYSkBHz/yIq8WMS0QSIizUoggh35hHVg4BTMXl3rz/tPearJNKU/8oRjEyuZ0OYTEDOA==
+"@posthog/types@1.334.1":
+  version "1.334.1"
+  resolved "https://registry.yarnpkg.com/@posthog/types/-/types-1.334.1.tgz#77287c24831565c673cb0f59e2c0d46a6b9a1040"
+  integrity sha512-ypFnwTO7qbV7icylLbujbamPdQXbJq0a61GUUBnJAeTbBw/qYPIss5IRYICcbCj0uunQrwD7/CGxVb5TOYKWgA==
 
 "@protobufjs/aspromise@^1.1.1", "@protobufjs/aspromise@^1.1.2":
   version "1.1.2"
@@ -5457,9 +5457,9 @@ postcss@^8.4.41, postcss@^8.5.6:
     source-map-js "^1.2.1"
 
 posthog-js@^1.300.0:
-  version "1.333.0"
-  resolved "https://registry.yarnpkg.com/posthog-js/-/posthog-js-1.333.0.tgz#f6459c6d8c0abe44b795dd2425cd811e5705cfb0"
-  integrity sha512-c7vquERMedjuGE2GnaDDJW/V1BIMMQG7BlYKrH0z8O7fc3WpEsQ/IyQ+9aD9+DLxlDCFpzrwgoxVDWi9K37mdA==
+  version "1.334.1"
+  resolved "https://registry.yarnpkg.com/posthog-js/-/posthog-js-1.334.1.tgz#7ee35bf3265471292770a8bc519bba7fd9bc94b6"
+  integrity sha512-5cDzLICr2afnwX/cR9fwoLC0vN0Nb5gP5HiCigzHkgHdO+E3WsYefla3EFMQz7U4r01CBPZ+nZ9/srkzeACxtQ==
   dependencies:
     "@opentelemetry/api" "^1.9.0"
     "@opentelemetry/api-logs" "^0.208.0"
@@ -5467,13 +5467,13 @@ posthog-js@^1.300.0:
     "@opentelemetry/resources" "^2.2.0"
     "@opentelemetry/sdk-logs" "^0.208.0"
     "@posthog/core" "1.13.0"
-    "@posthog/types" "1.333.0"
+    "@posthog/types" "1.334.1"
     core-js "^3.38.1"
     dompurify "^3.3.1"
     fflate "^0.4.8"
     preact "^10.28.0"
     query-selector-shadow-dom "^1.0.1"
-    web-vitals "^4.2.4"
+    web-vitals "^5.1.0"
 
 posthog-node@^5.15.0:
   version "5.24.1"
@@ -6682,6 +6682,11 @@ web-vitals@^4.2.4:
   version "4.2.4"
   resolved "https://registry.yarnpkg.com/web-vitals/-/web-vitals-4.2.4.tgz#1d20bc8590a37769bd0902b289550936069184b7"
   integrity sha512-r4DIlprAGwJ7YM11VZp4R884m0Vmgr6EAKe3P+kO0PPj3Unqyvv59rczf6UiGcb9Z8QxZVcqKNwv/g0WNdWwsw==
+
+web-vitals@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/web-vitals/-/web-vitals-5.1.0.tgz#2f117e92c8c4eeb107cb163cbb482ac20d685ebd"
+  integrity sha512-ArI3kx5jI0atlTtmV0fWU3fjpLmq/nD3Zr1iFFlJLaqa5wLBkUSzINwBPySCX/8jRyjlmy1Volw1kz1g9XE4Jg==
 
 websocket-driver@>=0.5.1:
   version "0.7.4"
