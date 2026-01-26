@@ -1,4 +1,9 @@
+import { redirect } from "next/navigation";
+
 export default function JudgingPage() {
+  redirect("/hackers");
+
+/*
   return (
     <section className="space-y-4">
       <header>
@@ -9,4 +14,5 @@ export default function JudgingPage() {
       </header>
     </section>
   );
+*/
 }
