@@ -75,12 +75,6 @@ export default function AddNewSponsorModal({
     const lightLogo = watch("lightLogo");
     const darkLogo = watch("darkLogo");
 
-    const { mutateAsync } = useMutation({
-      mutationFn: (data: IFormInput) => {
-        
-      }
-    })
-
     const handleAddSponsorship = async(data: IFormInput) => {
       if (!name.trim() || !website.trim() || (!lightLogo && !darkLogo)) return;
       
@@ -88,10 +82,16 @@ export default function AddNewSponsorModal({
       formData.append("name", data.name.trim());
       formData.append("level", data.level.value);
       formData.append("link", data.website);
+      formData.append("order", String(data.order));
       if (data.lightLogo) formData.append("lightLogo", data.lightLogo);
       if (data.darkLogo) formData.append("darkLogo", data.darkLogo);
 
-      await createSponsorMutation.mutateAsync(formData)
+      try {
+        await createSponsorMutation.mutateAsync(formData);
+        closeModal();
+      } catch (error) {
+        console.error("Failed to add sponsor:", error)
+      }
     }
 
     return (
@@ -172,7 +172,7 @@ export default function AddNewSponsorModal({
                       control={control} 
                       rules={{
                         validate: (value) => {
-                          if (!darkLogo && !value) { return false; }
+                          if (!lightLogo && !value) { return false; }
                           return true;
                         }
                       }} 

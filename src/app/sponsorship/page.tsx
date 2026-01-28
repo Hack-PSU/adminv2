@@ -69,10 +69,6 @@ export default function SponsorshipPage() {
   // Modal specific function
   const closeModal = () => { setShowAddModal(false); };
 
-  const handleAddSponsorship = async (data: FormData) => {
-
-  };
-
   if (isLoading) {
     return (
       <section className="space-y-4">
@@ -102,7 +98,7 @@ export default function SponsorshipPage() {
         idField="id"
       />
 
-      {showAddModal && (<AddNewSponsorModal closeModal={closeModal}/>)}
+      {showAddModal && (<AddNewSponsorModal totalSponsors={sponsors.length} closeModal={closeModal}/>)}
     </section>
   );
 }
