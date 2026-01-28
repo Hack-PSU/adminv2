@@ -1,7 +1,5 @@
+import { redirect } from "next/navigation";
+
 export default function AnalyticsPage() {
-  return (
-    <section className="space-y-4">
-      
-    </section>
-  );
+  redirect("/analytics/summary");
 }
