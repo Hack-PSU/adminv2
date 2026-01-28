@@ -226,10 +226,10 @@ const grouped = useMemo(() => {
     setIsWorking(true);
     try {
       await createOrganizer.mutateAsync({
-        email,
-        firstName,
-        lastName,
-        team,
+        email: newEmail,
+        firstName: newFirstName,
+        lastName: newLastName,
+        team: newTeam,
         privilege: Role.TEAM,
       });
       await refetch();
