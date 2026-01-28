@@ -1,5 +1,5 @@
 "use client";
-
+import { useState } from "react";
 import { DataTable, DataTableColumn } from "@/components/table";
 import {
   useAllSponsors,
@@ -7,11 +7,16 @@ import {
   useUpdateSponsor,
 } from "@/common/api/sponsor/hook";
 import { SponsorEntity } from "@/common/api/sponsor/entity";
+import { Button } from "@/components/ui/button";
+import AddNewSponsorModal from "@/components/modal/AddNewSponsorModal";
 
 export default function SponsorshipPage() {
   const { data: sponsors = [], isLoading, refetch } = useAllSponsors();
   const deleteSponsorMutation = useDeleteSponsor();
   const updateSponsorMutation = useUpdateSponsor();
+
+  // Modal specific
+  const [showAddModal, setShowAddModal] = useState(false);
 
   // Define columns - all static (not editable)
   const columns: DataTableColumn<SponsorEntity>[] = [
@@ -61,6 +66,13 @@ export default function SponsorshipPage() {
     await refetch();
   };
 
+  // Modal specific function
+  const closeModal = () => { setShowAddModal(false); };
+
+  const handleAddSponsorship = async (data: FormData) => {
+
+  };
+
   if (isLoading) {
     return (
       <section className="space-y-4">
@@ -76,9 +88,11 @@ export default function SponsorshipPage() {
 
   return (
     <section className="space-y-4">
-      <header>
+      <header className="flex flex-col gap-3 sm:flex-row sm:justify-between">
         <h1 className="text-2xl font-semibold text-zinc-900">Sponsorship</h1>
+        <Button onClick={() => setShowAddModal(true)} className="w-full sm:w-auto">Add Sponsor</Button>
       </header>
+
       <DataTable
         data={sponsors}
         columns={columns}
@@ -87,6 +101,8 @@ export default function SponsorshipPage() {
         onRefresh={handleRefresh}
         idField="id"
       />
+
+      {showAddModal && (<AddNewSponsorModal closeModal={closeModal}/>)}
     </section>
   );
 }
