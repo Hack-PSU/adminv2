@@ -12,9 +12,10 @@ export default function SettingsLayout({
   const pathname = usePathname();
 
   const tabs = [
-    { name: "Hackathons", href: "/settings/hackathon" },
-    { name: "Flags", href: "/settings/flags" },
-  ];
+  { name: "Members", href: "/settings/members" },
+  { name: "Flags", href: "/settings/flags" },
+  { name: "Hackathons", href: "/settings/hackathon" },
+];
 
   return (
     <section className="space-y-4">
