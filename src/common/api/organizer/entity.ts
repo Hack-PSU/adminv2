@@ -14,5 +14,6 @@ export interface OrganizerEntity {
   lastName: string;
   privilege: Role;
   judgingLocation?: string;
+  team?: string;
   award?: string;
 }
