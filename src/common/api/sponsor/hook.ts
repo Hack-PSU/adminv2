@@ -33,7 +33,7 @@ export function useSponsor(id: number) {
 export function useCreateSponsor() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (newData: Omit<SponsorEntity, "id">) => createSponsor(newData),
+    mutationFn: (newData: Omit<SponsorEntity, "id"> | FormData) => createSponsor(newData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: sponsorQueryKeys.all });
     },
