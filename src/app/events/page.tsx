@@ -1,16 +1,17 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { DataTable, DataTableColumn } from "@/components/table";
 import {
   useAllEvents,
   useDeleteEvent,
   useUpdateEvent,
-  useCreateEvent,
 } from "@/common/api/event/hook";
-import { EventEntityResponse, EventType } from "@/common/api/event/entity";
-import { useAllLocations } from "@/common/api/location/hook";
+import { EventEntityResponse } from "@/common/api/event/entity";
 import { Pencil, Trash2, Plus } from "lucide-react";
+import { EventType } from "@/common/api/event/entity";
+import { useAllLocations } from "@/common/api/location/hook";
 
 interface EventFormData {
   name: string;
@@ -27,12 +28,12 @@ interface EventFormData {
 }
 
 export default function EventsPage() {
+  const router = useRouter();
   const { data: events = [], isLoading, refetch } = useAllEvents();
   const { data: locations = [] } = useAllLocations();
   const deleteEventMutation = useDeleteEvent();
   const updateEventMutation = useUpdateEvent();
-  const createEventMutation = useCreateEvent();
-  
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventEntityResponse | null>(null);
   const [formData, setFormData] = useState<EventFormData>({
@@ -48,24 +49,6 @@ export default function EventsPage() {
     wsUrls: [],
     icon: null,
   });
-
-  const openCreateModal = () => {
-    setEditingEvent(null);
-    setFormData({
-      name: "",
-      type: "",
-      description: "",
-      locationId: "",
-      startTime: "",
-      endTime: "",
-      wsPresenterNames: "",
-      wsSkillLevel: "",
-      wsRelevantSkills: "",
-      wsUrls: [],
-      icon: null,
-    });
-    setIsModalOpen(true);
-  };
 
   const openEditModal = (event: EventEntityResponse) => {
     setEditingEvent(event);
@@ -83,13 +66,6 @@ export default function EventsPage() {
       icon: null,
     });
     setIsModalOpen(true);
-  };
-
-  const handleDeleteSingle = async (id: string) => {
-    if (confirm("Are you sure you want to delete this event?")) {
-      await deleteEventMutation.mutateAsync(id);
-      await refetch();
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -119,14 +95,27 @@ export default function EventsPage() {
     try {
       if (editingEvent) {
         await updateEventMutation.mutateAsync({ id: editingEvent.id, data: formDataToSubmit });
-      } else {
-        await createEventMutation.mutateAsync(formDataToSubmit);
       }
       setIsModalOpen(false);
       await refetch();
     } catch (error) {
       console.error("Error saving event:", error);
     }
+  };
+
+  const handleDeleteSingle = async (id: string) => {
+    if (confirm("Are you sure you want to delete this event?")) {
+      await deleteEventMutation.mutateAsync(id);
+      await refetch();
+    }
+  };
+
+  const handleAddEvent = () => {
+    router.push("/events/create");
+  };
+
+  const handleRefresh = async () => {
+    await refetch();
   };
 
   const columns: DataTableColumn<EventEntityResponse>[] = [
@@ -204,7 +193,7 @@ export default function EventsPage() {
             <p className="text-sm text-zinc-500">Manage HackPSU Events</p>
           </div>
           <button
-            onClick={openCreateModal}
+            onClick={handleAddEvent}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
           >
             <Plus className="h-5 w-5" />
@@ -223,10 +212,9 @@ export default function EventsPage() {
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-zinc-900">Events</h1>
-          <p className="text-sm text-zinc-500">Manage HackPSU Events</p>
         </div>
         <button
-          onClick={openCreateModal}
+          onClick={handleAddEvent}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
         >
           <Plus className="h-5 w-5" />
@@ -237,19 +225,17 @@ export default function EventsPage() {
       <DataTable
         data={events}
         columns={columns}
-        onRefresh={refetch}
+        onRefresh={handleRefresh}
         idField="id"
         enableRowSelection={false}
       />
 
-      {/* Create/Edit Modal */}
-      {isModalOpen && (
+      {/* Edit Modal */}
+      {isModalOpen && editingEvent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
-              <h2 className="text-xl font-semibold">
-                {editingEvent ? "Edit Event" : "Create New Event"}
-              </h2>
+              <h2 className="text-xl font-semibold">Edit Event</h2>
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="text-zinc-400 hover:text-zinc-600"
@@ -417,14 +403,10 @@ export default function EventsPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={createEventMutation.isPending || updateEventMutation.isPending}
+                  disabled={updateEventMutation.isPending}
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
                 >
-                  {createEventMutation.isPending || updateEventMutation.isPending
-                    ? "Saving..."
-                    : editingEvent
-                    ? "Update Event"
-                    : "Create Event"}
+                  {updateEventMutation.isPending ? "Saving..." : "Update Event"}
                 </button>
               </div>
             </form>
