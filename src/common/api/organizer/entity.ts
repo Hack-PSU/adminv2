@@ -9,10 +9,12 @@ export enum Role {
 
 export interface OrganizerEntity {
   id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  privilege: Role;
-  judgingLocation?: string;
-  award?: string;
+	email: string;
+	firstName: string;
+	lastName: string;
+	privilege: Role;
+	team?: string;
+	judgingLocation?: string;
+	award?: string;
+	isActive: boolean;
 }
