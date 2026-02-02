@@ -16,4 +16,5 @@ export interface OrganizerEntity {
   judgingLocation?: string;
   team?: string;
   award?: string;
+  isActive?: boolean;
 }

@@ -115,8 +115,11 @@ export default function MembersSettingsPage() {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return draft;
     return draft.filter((o) => {
+      // Only include active organizers
+      if (!o.isActive) return false;
+      if (o.privilege === Role.NONE) return false;
+      if (!q) return true;
       const name = `${o.firstName ?? ""} ${o.lastName ?? ""}`.toLowerCase();
       const email = (o.email ?? "").toLowerCase();
       return name.includes(q) || email.includes(q);
@@ -124,7 +127,7 @@ export default function MembersSettingsPage() {
   }, [draft, search]);
 
 const grouped = useMemo(() => {
-  return groupBy(filtered, (o) => roleLabel(o.privilege));
+  return groupBy(filtered, (o) => o.team ?? "Unassigned");
 }, [filtered]);
 
   const divisionNames = useMemo(() => Object.keys(grouped).sort(), [grouped]);
@@ -157,6 +160,7 @@ const grouped = useMemo(() => {
   };
 
   const onRefresh = async () => {
+    setDraft([]);
     await refetch();
     setSelected(new Set());
   };
@@ -232,6 +236,7 @@ const grouped = useMemo(() => {
         team: newTeam,
         privilege: Role.TEAM,
       });
+      closeModal();
       await refetch();
     } finally {
       setIsWorking(false);
