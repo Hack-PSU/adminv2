@@ -364,6 +364,13 @@ const csv = [
           </div>
         </div>
       )}
+      {/* Add Member button at top right */}
+      <div className="flex justify-end">
+        <Button onClick={onAddMember} disabled={isWorking}>
+          Add Member
+        </Button>
+      </div>
+
       {/* Toolbar matches old layout */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative flex-1 sm:max-w-lg">
@@ -384,10 +391,6 @@ const csv = [
 
           <Button onClick={onExportCsv} disabled={organizers.length === 0} variant="outline">
             Export CSV
-          </Button>
-
-          <Button onClick={onAddMember} disabled={isWorking}>
-            Add Member
           </Button>
 
           <Button onClick={onSave} disabled={isWorking} variant="default">
