@@ -32,6 +32,42 @@ function roleLabel(role: Role) {
   }
 }
 
+const TEAMS = {
+  COMMUNICATIONS: "Communications",
+  DESIGN: "Design", 
+  EDUCATION: "Education",
+  ENTERTAINMENT: "Entertainment",
+  FINANCE: "Finance",
+  LOGISTICS: "Logistics",
+  MARKETING: "Marketing",
+  SPONSORSHIP: "Sponsorship",
+  TECHNOLOGY: "Technology",
+  CO_EXEC: "Co-exec",
+  EXTERNAL: "External",
+  SERVICE_ACCOUNT: "Service Account",
+  ADVISORS: "Advisors",
+  UNASSIGNED: "Unassigned",
+  EXEC: "Exec",
+};
+
+const teamOptions = [
+  { label: "Communications", value: TEAMS.COMMUNICATIONS },
+  { label: "Design", value: TEAMS.DESIGN },
+  { label: "Education", value: TEAMS.EDUCATION },
+  { label: "Entertainment", value: TEAMS.ENTERTAINMENT },
+  { label: "Finance", value: TEAMS.FINANCE },
+  { label: "Logistics", value: TEAMS.LOGISTICS },
+  { label: "Marketing", value: TEAMS.MARKETING },
+  { label: "Sponsorship", value: TEAMS.SPONSORSHIP },
+  { label: "Technology", value: TEAMS.TECHNOLOGY },
+  { label: "Co-exec", value: TEAMS.CO_EXEC },
+  { label: "External", value: TEAMS.EXTERNAL },
+  { label: "Service Account", value: TEAMS.SERVICE_ACCOUNT },
+  { label: "Advisors", value: TEAMS.ADVISORS },
+  { label: "Unassigned", value: TEAMS.UNASSIGNED },
+  { label: "Exec", value: TEAMS.EXEC },
+]
+
 const roleOptions = [
   { label: roleLabel(Role.NONE), value: Role.NONE },
   { label: roleLabel(Role.VOLUNTEER), value: Role.VOLUNTEER },
@@ -57,10 +93,18 @@ export default function MembersSettingsPage() {
   const deleteOrganizer = useDeleteOrganizer();
   const createOrganizer = useCreateOrganizer();
 
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [newFirstName, setNewFirstName] = useState("");
+  const [newLastName, setNewLastName] = useState("");
+  const [newPrivilege, setNewPrivilege] = useState<Role>(Role.TEAM);
+  const [newTeam, setNewTeam] = useState("");
+
   const [isWorking, setIsWorking] = useState(false);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
+  
 
   const [draft, setDraft] = useState<OrganizerEntity[]>([]);
 
@@ -158,20 +202,34 @@ const grouped = useMemo(() => {
       setIsWorking(false);
     }
   };
-
+  /* ??? Prompt does not seem like the move here am just commenting out in case 
   const onAddMember = async () => {
     const email = prompt("Enter member email:");
     if (!email) return;
 
     const firstName = prompt("First name:") ?? "";
     const lastName = prompt("Last name:") ?? "";
+*/
+  const closeModal = () => {
+    setShowAddModal(false);
+      setNewEmail("");
+      setNewFirstName("");
+      setNewLastName("");
+      setNewPrivilege(Role.NONE);
+      setNewTeam("");
+  }
+  const onAddMember = () => setShowAddModal(true);
+  const handleAddMember = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!newEmail.trim()) return;
 
     setIsWorking(true);
     try {
       await createOrganizer.mutateAsync({
-        email,
-        firstName,
-        lastName,
+        email: newEmail,
+        firstName: newFirstName,
+        lastName: newLastName,
+        team: newTeam,
         privilege: Role.TEAM,
       });
       await refetch();
@@ -212,6 +270,107 @@ const csv = [
 
   return (
     <div className="space-y-4">
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md space-y-4 rounded-lg bg-white p-6 shadow-xl">
+            <div className="flex items-start justify-between gap-4">
+              <h2 className="text-lg font-semibold text-zinc-900">Add Member</h2>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={closeModal}
+                className="px-2 py-1"
+                disabled={isWorking}
+              >
+                ✕
+              </Button>
+            </div>
+
+            <form onSubmit={handleAddMember} className="space-y-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-zinc-800">First Name</label>
+                  <input
+                    type="text"
+                    value={newFirstName}
+                    onChange={(event) => setNewFirstName(event.target.value)}
+                    className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                    placeholder="Enter first name"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-zinc-800">Last Name</label>
+                  <input
+                    type="text"
+                    value={newLastName}
+                    onChange={(event) => setNewLastName(event.target.value)}
+                    className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                    placeholder="Enter last name"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-zinc-800">Email</label>
+                  <input
+                    type="email"
+                    value={newEmail}
+                    onChange={(event) => setNewEmail(event.target.value)}
+                    className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                    placeholder="Enter email"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-zinc-800">Privilege</label>
+                  <select
+                    value={String(newPrivilege)}
+                    onChange={(event) => setNewPrivilege(Number(event.target.value) as Role)}
+                    className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm"
+                  >
+                    {roleOptions.map((opt) => (
+                      <option key={String(opt.value)} value={String(opt.value)}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-zinc-800">Team</label>
+                <select
+                  value={newTeam}
+                  onChange={(event) => setNewTeam(event.target.value)}
+                  className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm"
+                >
+                  {teamOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <Button type="submit" disabled={isWorking || !newEmail.trim()} className="w-full">
+                  {isWorking ? "Adding..." : "Submit"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Add Member button at top right */}
+      <div className="flex justify-end">
+        <Button onClick={onAddMember} disabled={isWorking}>
+          Add Member
+        </Button>
+      </div>
+
       {/* Toolbar matches old layout */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative flex-1 sm:max-w-lg">
@@ -220,7 +379,7 @@ const csv = [
             className="w-full rounded-md border border-zinc-300 py-2 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             placeholder="Search by name or email"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(event) => setSearch(event.target.value)}
           />
         </div>
 
@@ -232,10 +391,6 @@ const csv = [
 
           <Button onClick={onExportCsv} disabled={organizers.length === 0} variant="outline">
             Export CSV
-          </Button>
-
-          <Button onClick={onAddMember} disabled={isWorking}>
-            Add Member
           </Button>
 
           <Button onClick={onSave} disabled={isWorking} variant="default">
