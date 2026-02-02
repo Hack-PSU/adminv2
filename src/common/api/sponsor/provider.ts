@@ -13,21 +13,21 @@ export async function getSponsor(id: number): Promise<SponsorEntity> {
 }
 
 export async function createSponsor(
-  data: Omit<SponsorEntity, "id">,
+  data: Omit<SponsorEntity, "id"> | FormData,
 ): Promise<SponsorEntity> {
   return apiFetch<SponsorEntity>("/sponsors", {
     method: "POST",
-    body: JSON.stringify(data),
+    body: data instanceof FormData ? data : JSON.stringify(data),
   });
 }
 
 export async function updateSponsor(
   id: number,
-  data: Partial<Omit<SponsorEntity, "id">>,
+  data: Partial<Omit<SponsorEntity, "id">> | FormData,
 ): Promise<SponsorEntity> {
   return apiFetch<SponsorEntity>(`/sponsors/${id}`, {
     method: "PATCH",
-    body: JSON.stringify(data),
+    body: data instanceof FormData ? data : JSON.stringify(data),
   });
 }
 
