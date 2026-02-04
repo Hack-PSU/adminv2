@@ -9,7 +9,7 @@ import {
 import { UserEntity } from "@/common/api/user/entity";
 
 export default function HackersPage() {
-  const { data: users = [], isLoading, refetch } = useAllUsers();
+  const { data: users = [], isLoading, refetch } = useAllUsers(true);
   const deleteUserMutation = useDeleteUser();
   const updateUserMutation = useUpdateUser();
 
