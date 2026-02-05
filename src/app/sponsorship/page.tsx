@@ -29,6 +29,11 @@ export default function SponsorshipPage() {
       header: "Level",
     },
     {
+      accessorKey: "sponsorType",
+      header: "Type",
+      cell: (value) => value || "N/A",
+    },
+    {
       accessorKey: "link",
       header: "Website",
       cell: (value, row) => value ? (
