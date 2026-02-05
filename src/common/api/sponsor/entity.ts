@@ -1,6 +1,7 @@
 export interface SponsorEntity {
   id: number;
   name: string;
+  sponsorType?: string;
   level: string;
   link?: string;
   darkLogo?: string;
