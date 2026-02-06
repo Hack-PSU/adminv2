@@ -1639,13 +1639,6 @@
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.8.tgz#6b79032e760a0899cd4204710beede972a3a185f"
   integrity sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==
 
-"@posthog/core@1.17.0":
-  version "1.17.0"
-  resolved "https://registry.yarnpkg.com/@posthog/core/-/core-1.17.0.tgz#5889b0891655b8a761331defd1af06945a2a3b53"
-  integrity sha512-8pDNL+/u9ojzXloA5wILVDXBCV5daJ7w2ipCALQlEEZmL752cCKhRpbyiHn3tjKXh3Hy6aOboJneYa1JdlVHrQ==
-  dependencies:
-    cross-spawn "^7.0.6"
-
 "@posthog/core@1.20.0":
   version "1.20.0"
   resolved "https://registry.yarnpkg.com/@posthog/core/-/core-1.20.0.tgz#b529cf017c23037e6202eecb7fa1ac554d731fb8"
@@ -1653,10 +1646,10 @@
   dependencies:
     cross-spawn "^7.0.6"
 
-"@posthog/types@1.336.4":
-  version "1.336.4"
-  resolved "https://registry.yarnpkg.com/@posthog/types/-/types-1.336.4.tgz#7f47c7482f74242b7e1791162ce98f003f87f39d"
-  integrity sha512-BY3cq/8segbXEvHbEXx9SWmaKJEM0AGgsOgMFH2yy13AV+rUHsGcp4Z5LDI5pU25DURN9EAZvzcoVyYy/Iokmw==
+"@posthog/types@1.342.0":
+  version "1.342.0"
+  resolved "https://registry.yarnpkg.com/@posthog/types/-/types-1.342.0.tgz#68b00a945f9fd664901f6b1d18584d1bbbf53cf6"
+  integrity sha512-GfKJ6Q+4+IE4+9LrONkSBS92gsNJBuL+HfaSKhXd/bxD/tx+7CySmPshmBbjsIqA+eWbOdqreQK77x4RzTGjzQ==
 
 "@protobufjs/aspromise@^1.1.1", "@protobufjs/aspromise@^1.1.2":
   version "1.1.2"
@@ -1994,10 +1987,17 @@
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.17.23.tgz#c1bb06db218acc8fc232da0447473fc2fb9d9841"
   integrity sha512-RDvF6wTulMPjrNdCoYRC8gNR880JNGT8uB+REUpC2Ns4pRqQJhGz90wh7rgdXDPpCczF3VGktDuFGVnz8zP7HA==
 
-"@types/node@>=12.12.47", "@types/node@>=13.7.0":
+"@types/node@>=12.12.47":
   version "25.2.0"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-25.2.0.tgz#015b7d228470c1dcbfc17fe9c63039d216b4d782"
   integrity sha512-DZ8VwRFUNzuqJ5khrvwMXHmvPe+zGayJhr2CDNiKB1WBE1ST8Djl00D0IC4vvNmHMdj6DlbYRIaFE7WHjlDl5w==
+  dependencies:
+    undici-types "~7.16.0"
+
+"@types/node@>=13.7.0":
+  version "25.2.1"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-25.2.1.tgz#378021f9e765bb65ba36de16f3c3a8622c1fa03d"
+  integrity sha512-CPrnr8voK8vC6eEtyRzvMpgp3VyVRhgclonE7qYi6P9sXwYb59ucfrnmFBTaP0yUi8Gk4yZg/LlTJULGxvTNsg==
   dependencies:
     undici-types "~7.16.0"
 
@@ -5502,17 +5502,17 @@ postcss@^8.4.41, postcss@^8.5.6:
     source-map-js "^1.2.1"
 
 posthog-js@^1.300.0:
-  version "1.336.4"
-  resolved "https://registry.yarnpkg.com/posthog-js/-/posthog-js-1.336.4.tgz#bfe8f7eece121b8a020dd855a89eb965dc01d623"
-  integrity sha512-NX81XaqOjS/gue3UsbAAuJxi6vD0AGy1HUvywBIhAArCwbTXKS04NhEFwUcYJdrmwXUf94MntEIWGoc1pTFDtg==
+  version "1.342.0"
+  resolved "https://registry.yarnpkg.com/posthog-js/-/posthog-js-1.342.0.tgz#3a29d0cc75556e6f10c3c1f1756345480b0ea98c"
+  integrity sha512-edJR0NbkJ6Gps9eOKdpirVwsFhEuRU2ZWI0wZSPLXmLR3ozDsnBTw79SXeSnaueLd/Qln2pD3eeq2RM4rBwwow==
   dependencies:
     "@opentelemetry/api" "^1.9.0"
     "@opentelemetry/api-logs" "^0.208.0"
     "@opentelemetry/exporter-logs-otlp-http" "^0.208.0"
     "@opentelemetry/resources" "^2.2.0"
     "@opentelemetry/sdk-logs" "^0.208.0"
-    "@posthog/core" "1.17.0"
-    "@posthog/types" "1.336.4"
+    "@posthog/core" "1.20.0"
+    "@posthog/types" "1.342.0"
     core-js "^3.38.1"
     dompurify "^3.3.1"
     fflate "^0.4.8"
@@ -5533,9 +5533,9 @@ powershell-utils@^0.1.0:
   integrity sha512-dM0jVuXJPsDN6DvRpea484tCUaMiXWjuCn++HGTqUWzGDjv5tZkEZldAJ/UMlqRYGFrD/etByo4/xOuC/snX2A==
 
 preact@^10.28.2:
-  version "10.28.2"
-  resolved "https://registry.yarnpkg.com/preact/-/preact-10.28.2.tgz#4b668383afa4b4a2546bbe4bd1747e02e2360138"
-  integrity sha512-lbteaWGzGHdlIuiJ0l2Jq454m6kcpI1zNje6d8MlGAFlYvP2GO4ibnat7P74Esfz4sPTdM6UxtTwh/d3pwM9JA==
+  version "10.28.3"
+  resolved "https://registry.yarnpkg.com/preact/-/preact-10.28.3.tgz#3c2171526b3e29628ad1a6c56a9e3ca867bbdee8"
+  integrity sha512-tCmoRkPQLpBeWzpmbhryairGnhW9tKV6c6gr/w+RhoRoKEJwsjzipwp//1oCpGPOchvSLaAPlpcJi9MwMmoPyA==
 
 prelude-ls@^1.2.1:
   version "1.2.1"
