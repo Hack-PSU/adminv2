@@ -25,8 +25,18 @@ enum SponsorLevels {
   EMERALD = "emerald" 
 };
 
+enum SponsorTypes {
+  SPONSOR = "sponsor",
+  PARTNER = "partner"
+}
+
 interface SponsorOption {
   value: SponsorLevels,
+  label: string,
+}
+
+interface SponsorTypeOption {
+  value: SponsorTypes,
   label: string,
 }
 
@@ -38,9 +48,15 @@ const SponsorLevelOptions: SponsorOption[] = [
   { value: SponsorLevels.EMERALD, label: "Emerald"},
 ]
 
+const SponsorTypeOptions: SponsorTypeOption[] = [
+  { value: SponsorTypes.SPONSOR, label: "Sponsor"},
+  { value: SponsorTypes.PARTNER, label: "Event Partner"},
+]
+
 interface IFormInput {
   name: string,
   level: SponsorOption,
+  sponsorType: SponsorTypeOption,
   website: string,
   lightLogo: File | null,
   darkLogo: File | null,
@@ -55,6 +71,7 @@ export default function AddNewSponsorModal({
       defaultValues: {
         name: "",
         level: { value: SponsorLevels.GOLD, label: "Gold"} as SponsorOption,
+        sponsorType: { value: SponsorTypes.SPONSOR, label: "Sponsor"} as SponsorTypeOption,
         website: "",
         lightLogo: null,
         darkLogo: null,
@@ -74,6 +91,7 @@ export default function AddNewSponsorModal({
     const website = watch("website");
     const lightLogo = watch("lightLogo");
     const darkLogo = watch("darkLogo");
+    const sponsorType = watch("sponsorType");
 
     const handleAddSponsorship = async(data: IFormInput) => {
       if (!name.trim() || !website.trim() || (!lightLogo && !darkLogo)) return;
@@ -81,6 +99,7 @@ export default function AddNewSponsorModal({
       const formData = new FormData();
       formData.append("name", data.name.trim());
       formData.append("level", data.level.value);
+      formData.append("sponsorType", data.sponsorType.value);
       formData.append("link", data.website);
       formData.append("order", String(data.order));
       if (data.lightLogo) formData.append("lightLogo", data.lightLogo);
@@ -141,6 +160,20 @@ export default function AddNewSponsorModal({
                       )}
                     />
                   </div>
+                </div>
+                <div className="w-full space-y-1">
+                  <label className="text-sm font-medium text-zinc-800">Sponsor Type</label>
+                  <Controller
+                    name="sponsorType"
+                    control={control}
+                    render={({ field }) => (
+                      <Select 
+                        className="text-sm"
+                        {...field}
+                        options={SponsorTypeOptions}
+                      />
+                    )}
+                  />
                 </div>
                 <div className="w-full space-y-1">
                   <label className="text-sm font-medium text-zinc-800">Website</label>
