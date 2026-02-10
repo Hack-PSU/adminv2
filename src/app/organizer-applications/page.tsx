@@ -16,6 +16,11 @@ export default function OrganizerApplicationsPage() {
   const acceptApplicationMutation = useAcceptApplication();
   const rejectApplicationMutation = useRejectApplication();
   const [selectedApplication, setSelectedApplication] = useState<OrganizerApplicationEntity | null>(null);
+  const [acceptModalData, setAcceptModalData] = useState<{
+    id: number;
+    team: OrganizerTeam;
+    name: string;
+  } | null>(null);
   const [rejectModalData, setRejectModalData] = useState<{
     id: number;
     team: OrganizerTeam;
@@ -94,13 +99,13 @@ export default function OrganizerApplicationsPage() {
             {canAcceptFirst && (
               <>
                 <button
-                  onClick={async () => {
-                    await acceptApplicationMutation.mutateAsync({
+                  onClick={() =>
+                    setAcceptModalData({
                       id: row.id,
-                      data: { team: firstChoiceTeam },
-                    });
-                    await refetch();
-                  }}
+                      team: firstChoiceTeam,
+                      name: row.name,
+                    })
+                  }
                   className="p-1 text-green-600 hover:bg-green-50 rounded transition-colors"
                   title="Accept (1st Choice)"
                 >
@@ -125,13 +130,13 @@ export default function OrganizerApplicationsPage() {
             {canAcceptSecond && (
               <>
                 <button
-                  onClick={async () => {
-                    await acceptApplicationMutation.mutateAsync({
+                  onClick={() =>
+                    setAcceptModalData({
                       id: row.id,
-                      data: { team: secondChoiceTeam },
-                    });
-                    await refetch();
-                  }}
+                      team: secondChoiceTeam,
+                      name: row.name,
+                    })
+                  }
                   className="p-1 text-green-600 hover:bg-green-50 rounded transition-colors"
                   title="Accept (2nd Choice)"
                 >
@@ -212,6 +217,44 @@ export default function OrganizerApplicationsPage() {
           setSelectedApplication(null);
         }}
       />
+
+      {/* Accept Confirmation Modal */}
+      {acceptModalData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h2 className="text-xl font-semibold mb-4">Confirm Acceptance</h2>
+            <p className="text-zinc-700 mb-6">
+              Are you sure you want to accept this application for{" "}
+              <span className="font-semibold">{acceptModalData.team}</span>?
+            </p>
+            <p className="text-sm text-zinc-500 mb-6">
+              Applicant: <span className="font-medium">{acceptModalData.name}</span>
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setAcceptModalData(null)}
+                className="px-4 py-2 text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-md transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  await acceptApplicationMutation.mutateAsync({
+                    id: acceptModalData.id,
+                    data: { team: acceptModalData.team },
+                  });
+                  await refetch();
+                  setAcceptModalData(null);
+                }}
+                disabled={acceptApplicationMutation.isPending}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 transition-colors"
+              >
+                {acceptApplicationMutation.isPending ? "Accepting..." : "Accept"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Reject Confirmation Modal */}
       {rejectModalData && (
