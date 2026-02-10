@@ -9,6 +9,7 @@ import {
   useDeleteExtraCreditClass,
 } from "@/common/api/extra-credit/hook";
 import { ExtraCreditClassEntity } from "@/common/api/extra-credit/entity";
+import { Plus } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -82,13 +83,9 @@ export default function ManageClassesPage() {
   return (
     <section className="space-y-4">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <h2 className="text-lg font-semibold text-zinc-900">Classes</h2>
-          <p className="text-sm text-zinc-500">
-            Create extra credit classes and track participation.
-          </p>
-        </div>
-        <Button onClick={() => setShowAddModal(true)} className="w-full sm:w-auto">
+        <div className="space-y-1" />
+        <Button onClick={() => setShowAddModal(true)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+          <Plus className="h-5 w-5" />
           Add Class
         </Button>
       </header>

@@ -10,7 +10,7 @@ import {
   useCreateOrganizer,
 } from "@/common/api/organizer";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Search, Trash2, Save } from "lucide-react";
+import { RefreshCw, Search, Trash2, Save, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function roleLabel(role: Role) {
@@ -371,7 +371,8 @@ const csv = [
       )}
       {/* Add Member button at top right */}
       <div className="flex justify-end">
-        <Button onClick={onAddMember} disabled={isWorking}>
+        <Button onClick={onAddMember} disabled={isWorking} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+          <Plus className="h-5 w-5" />
           Add Member
         </Button>
       </div>

@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { DataTable, DataTableColumn } from "@/components/table";
 import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import {
   useAllLocations,
   useCreateLocation,
@@ -106,7 +107,8 @@ export default function LocationsPage() {
         <div className="space-y-2">
           <h1 className="text-2xl font-semibold text-zinc-900">Locations</h1>
         </div>
-        <Button onClick={() => setShowAddModal(true)} className="w-full sm:w-auto">
+        <Button onClick={() => setShowAddModal(true)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+          <Plus className="h-5 w-5" />
           Add Location
         </Button>
       </header>

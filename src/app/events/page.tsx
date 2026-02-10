@@ -12,6 +12,7 @@ import { EventEntityResponse } from "@/common/api/event/entity";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import { EventType } from "@/common/api/event/entity";
 import { useAllLocations } from "@/common/api/location/hook";
+import { Button } from "@/components/ui/button";
 
 interface EventFormData {
   name: string;
@@ -213,13 +214,11 @@ export default function EventsPage() {
         <div>
           <h1 className="text-2xl font-semibold text-zinc-900">Events</h1>
         </div>
-        <button
-          onClick={handleAddEvent}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
-        >
+        <Button         onClick={handleAddEvent}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
           <Plus className="h-5 w-5" />
           Add Event
-        </button>
+        </Button>
       </header>
       
       <DataTable

@@ -8,6 +8,7 @@ import {
 } from "@/common/api/sponsor/hook";
 import { SponsorEntity } from "@/common/api/sponsor/entity";
 import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import AddNewSponsorModal from "@/components/modal/AddNewSponsorModal";
 
 export default function SponsorshipPage() {
@@ -91,7 +92,10 @@ export default function SponsorshipPage() {
     <section className="space-y-4">
       <header className="flex flex-col gap-3 sm:flex-row sm:justify-between">
         <h1 className="text-2xl font-semibold text-zinc-900">Sponsorship</h1>
-        <Button onClick={() => setShowAddModal(true)} className="w-full sm:w-auto">Add Sponsor</Button>
+        <Button onClick={() => setShowAddModal(true)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+          <Plus className="h-5 w-5" />
+            Add Sponsor
+          </Button>
       </header>
 
       <DataTable
