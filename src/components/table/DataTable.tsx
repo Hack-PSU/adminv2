@@ -11,7 +11,6 @@ import {
   ColumnDef,
   SortingState,
   FilterFn,
-  Row,
 } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +24,7 @@ import {
   Trash2,
   Save,
   Search,
+  Filter,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +34,6 @@ const EditableCell: React.FC<{
   control: React.ReactNode;
 }> = ({ display, control }) => {
   const [isEditing, setIsEditing] = useState(false);
-
   return (
     <div 
       className="relative min-h-[2rem]"
@@ -105,9 +104,14 @@ export function DataTable<TData extends Record<string, any>>({
   const [data, setData] = useState<TData[]>(initialData);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
+  const [filterVersion, setFilterVersion] = useState(0);
   const [selectedRows, setSelectedRows] = useState<Set<string | number>>(
     new Set(),
   );
+  const [teamFilters, setTeamFilters] = useState<Set<string>>(new Set());
+  const [statusFilters, setStatusFilters] = useState<Set<string>>(new Set());
+  const [yearFilters, setYearFilters] = useState<Set<string>>(new Set());
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [pageSize, setPageSize] = useState(10);
   const [pageIndex, setPageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -315,18 +319,65 @@ export function DataTable<TData extends Record<string, any>>({
       }
     },
     globalFilterFn: (row, columnId, filterValue) => {
-      // Search across all columns
+      const {
+        firstChoiceTeam,
+        secondChoiceTeam,
+        firstChoiceStatus,
+        secondChoiceStatus,
+        yearStanding,
+      } = row.original;
+
+      const normalizedTeamFilters = new Set(
+        Array.from(teamFilters).map((v) => v.toLowerCase())
+      );
+
+      const normalizedStatusFilters = new Set(
+        Array.from(statusFilters).map((v) => v.toLowerCase())
+      );
+
+      const normalizedYearFilters = new Set(
+        Array.from(yearFilters).map((v) => v.toLowerCase())
+      );
+
+      // TEAM (OR between first + second choice)
+      const teamMatch =
+        normalizedTeamFilters.size === 0 ||
+        normalizedTeamFilters.has(String(firstChoiceTeam ?? "").toLowerCase()) ||
+        normalizedTeamFilters.has(String(secondChoiceTeam ?? "").toLowerCase());
+
+      // STATUS (OR between first + second choice)
+      const statusMatch =
+        normalizedStatusFilters.size === 0 ||
+        normalizedStatusFilters.has(String(firstChoiceStatus ?? "").toLowerCase()) ||
+        normalizedStatusFilters.has(String(secondChoiceStatus ?? "").toLowerCase());
+
+      // YEAR (single field)
+      const yearMatch =
+        normalizedYearFilters.size === 0 ||
+        normalizedYearFilters.has(String(yearStanding ?? "").toLowerCase());
+
+      if (!teamMatch || !statusMatch || !yearMatch) {
+        return false;
+      }
+
+      // SEARCH
+      const searchValue = String(filterValue || "")
+        .split("__")[0]
+        .toLowerCase();
+
+      if (!searchValue) return true;
+
       return columns.some((column) => {
         const value = row.getValue(String(column.accessorKey));
         if (value == null) return false;
-        const stringValue = String(value).toLowerCase();
-        const searchValue = String(filterValue).toLowerCase();
-        return stringValue.startsWith(searchValue);
+        return String(value)
+          .toLowerCase()
+          .startsWith(searchValue);
       });
     },
     state: {
       sorting,
-      globalFilter,
+      globalFilter: `${globalFilter}__${filterVersion}`,
       pagination: {
         pageIndex,
         pageSize,
@@ -334,6 +385,11 @@ export function DataTable<TData extends Record<string, any>>({
     },
     manualPagination: false,
   });
+
+  useEffect(() => {
+    // Force global filter state change so React Table recomputes filtering
+    setFilterVersion((v) => v + 1);
+  }, [teamFilters, statusFilters, yearFilters]);
 
   // Handle save
   const handleSave = async () => {
@@ -389,6 +445,91 @@ export function DataTable<TData extends Record<string, any>>({
             onChange={(e) => setGlobalFilter(e.target.value)}
             className="w-full rounded-md border border-zinc-300 py-2 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
+        </div>
+
+        {/* Filters Dropdown */}
+        <div className="relative mt-2">
+          <Button
+            variant="outline"
+            size="default"
+            onClick={() => setFiltersOpen((prev) => !prev)}
+            className="flex items-center gap-2"
+          >
+            <Filter className="h-4 w-4" />
+            Filters
+          </Button>
+
+          {filtersOpen && (
+            <div className="absolute z-50 mt-2 w-[320px] rounded-md border border-zinc-200 bg-white p-4 shadow-lg">
+              
+              {/* Team Filters */}
+              <div className="mb-4">
+                <p className="mb-2 text-sm font-semibold text-zinc-700">Team</p>
+                <div className="flex flex-col gap-1">
+                  {["Communications","Design","Education","Entertainment","Finance","Logistics","Marketing","Sponsorship","Technology"].map(team => (
+                    <label key={team} className="inline-flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={teamFilters.has(team)}
+                        onChange={() => {
+                          const newSet = new Set(teamFilters);
+                          if (newSet.has(team)) newSet.delete(team);
+                          else newSet.add(team);
+                          setTeamFilters(newSet);
+                        }}
+                      />
+                      {team}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Status Filters */}
+              <div className="mb-4">
+                <p className="mb-2 text-sm font-semibold text-zinc-700">Status</p>
+                <div className="flex flex-col gap-1">
+                  {["Pending","Accepted","Rejected"].map(status => (
+                    <label key={status} className="inline-flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={statusFilters.has(status)}
+                        onChange={() => {
+                          const newSet = new Set(statusFilters);
+                          if (newSet.has(status)) newSet.delete(status);
+                          else newSet.add(status);
+                          setStatusFilters(newSet);
+                        }}
+                      />
+                      {status}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Year Standing Filters */}
+              <div>
+                <p className="mb-2 text-sm font-semibold text-zinc-700">Year Standing</p>
+                <div className="flex flex-col gap-1">
+                  {["Freshman","Sophomore","Junior","Senior","Other"].map(year => (
+                    <label key={year} className="inline-flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={yearFilters.has(year)}
+                        onChange={() => {
+                          const newSet = new Set(yearFilters);
+                          if (newSet.has(year)) newSet.delete(year);
+                          else newSet.add(year);
+                          setYearFilters(newSet);
+                        }}
+                      />
+                      {year}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          )}
         </div>
 
         {/* Actions */}
