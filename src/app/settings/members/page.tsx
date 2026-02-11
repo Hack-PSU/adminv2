@@ -10,7 +10,7 @@ import {
   useCreateOrganizer,
 } from "@/common/api/organizer";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Search, Trash2, Save, Plus } from "lucide-react";
+import { RefreshCw, Search, Trash2, Plus, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function roleLabel(role: Role) {
@@ -100,22 +100,21 @@ export default function MembersSettingsPage() {
   const [newPrivilege, setNewPrivilege] = useState<Role>(Role.TEAM);
   const [newTeam, setNewTeam] = useState("");
 
+  const [editingOrganizer, setEditingOrganizer] = useState<OrganizerEntity | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    firstName: "",
+    lastName: "",
+    team: "",
+    privilege: Role.TEAM,
+  });
+
   const [isWorking, setIsWorking] = useState(false);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  
-
-  const [draft, setDraft] = useState<OrganizerEntity[]>([]);
-
-  React.useEffect(() => {
-    if (!data) return;     
-    setDraft((prev) => (prev.length === 0 ? data : prev));
-  }, [data]);
-
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return draft.filter((o) => {
+    return organizers.filter((o) => {
       // Only include active organizers
       if (!o.isActive) return false;
       if (o.privilege === Role.NONE) return false;
@@ -124,7 +123,7 @@ export default function MembersSettingsPage() {
       const email = (o.email ?? "").toLowerCase();
       return name.includes(q) || email.includes(q);
     });
-  }, [draft, search]);
+  }, [organizers, search]);
 
 const grouped = useMemo(() => {
   return groupBy(filtered, (o) => o.team ?? "Unassigned");
@@ -153,44 +152,46 @@ const grouped = useMemo(() => {
     });
   };
 
-  const setPrivilege = (id: string, privilege: Role) => {
-    setDraft((prev) =>
-      prev.map((o) => (String(o.id) === id ? { ...o, privilege } : o)),
-    );
+  const openEditModal = (organizer: OrganizerEntity) => {
+    setEditingOrganizer(organizer);
+    setEditFormData({
+      firstName: organizer.firstName || "",
+      lastName: organizer.lastName || "",
+      team: organizer.team || "",
+      privilege: organizer.privilege,
+    });
   };
 
-  const onRefresh = async () => {
-    setDraft([]);
-    await refetch();
-    setSelected(new Set());
+  const closeEditModal = () => {
+    setEditingOrganizer(null);
+    setEditFormData({
+      firstName: "",
+      lastName: "",
+      team: "",
+      privilege: Role.TEAM,
+    });
   };
 
-  const onSave = async () => {
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingOrganizer) return;
+
     setIsWorking(true);
     try {
-      const originalById = new Map(organizers.map((o) => [String(o.id), o]));
-
-      for (const row of draft) {
-        const original = originalById.get(String(row.id));
-        if (!original) continue;
-
-        const newPrivilege =
-          typeof row.privilege === "string"
-            ? (Number(row.privilege) as Role)
-            : (row.privilege as Role);
-
-        if (original.privilege !== newPrivilege) {
-          await updateOrganizer.mutateAsync({
-            id: String(row.id),
-            data: { privilege: newPrivilege },
-          });
-        }
-      }
-
+      await updateOrganizer.mutateAsync({
+        id: String(editingOrganizer.id),
+        data: editFormData,
+      });
+      closeEditModal();
       await refetch();
     } finally {
       setIsWorking(false);
     }
+  };
+
+  const onRefresh = async () => {
+    await refetch();
+    setSelected(new Set());
   };
 
   const onDeleteSelected = async () => {
@@ -275,6 +276,107 @@ const csv = [
 
   return (
     <div className="space-y-4">
+      {/* Edit Organizer Modal */}
+      {editingOrganizer && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Edit Organizer</h2>
+              <button
+                onClick={closeEditModal}
+                className="text-zinc-400 hover:text-zinc-600"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium text-zinc-700 mb-1">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.firstName}
+                    onChange={(e) => setEditFormData({ ...editFormData, firstName: e.target.value })}
+                    className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-700 mb-1">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.lastName}
+                    onChange={(e) => setEditFormData({ ...editFormData, lastName: e.target.value })}
+                    className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-1">
+                  Team
+                </label>
+                <select
+                  value={editFormData.team}
+                  onChange={(e) => setEditFormData({ ...editFormData, team: e.target.value })}
+                  className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  {teamOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-1">
+                  Permission
+                </label>
+                <select
+                  value={String(editFormData.privilege)}
+                  onChange={(e) => setEditFormData({ ...editFormData, privilege: Number(e.target.value) as Role })}
+                  className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  {roleOptions.map((opt) => (
+                    <option key={String(opt.value)} value={String(opt.value)}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex gap-3 justify-end pt-4">
+                <button
+                  type="button"
+                  onClick={closeEditModal}
+                  className="px-4 py-2 text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-md transition-colors"
+                  disabled={isWorking}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                  disabled={isWorking}
+                >
+                  {isWorking ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md space-y-4 rounded-lg bg-white p-6 shadow-xl">
@@ -399,11 +501,6 @@ const csv = [
             Export CSV
           </Button>
 
-          <Button onClick={onSave} disabled={isWorking} variant="default">
-            <Save className="mr-2 h-4 w-4" />
-            Save
-          </Button>
-
           <Button
             onClick={onDeleteSelected}
             disabled={isWorking || selected.size === 0}
@@ -436,7 +533,7 @@ const csv = [
                 Email
               </th>
               <th className="border-b border-zinc-200 px-4 py-3 text-left text-sm font-semibold text-zinc-900">
-                Permission
+                Actions
               </th>
             </tr>
           </thead>
@@ -477,17 +574,13 @@ const csv = [
                           </td>
                           <td className="px-4 py-3 text-sm text-zinc-900">{o.email}</td>
                           <td className="px-4 py-3">
-                            <select
-                              value={String(o.privilege)}
-                              onChange={(e) => setPrivilege(id, Number(e.target.value) as Role)}
-                              className="h-10 w-full max-w-xs rounded-full border border-zinc-200 bg-white px-4 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            <button
+                              onClick={() => openEditModal(o)}
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                              title="Edit organizer"
                             >
-                              {roleOptions.map((opt) => (
-                                <option key={String(opt.value)} value={String(opt.value)}>
-                                  {opt.label}
-                                </option>
-                              ))}
-                            </select>
+                              <Pencil className="h-4 w-4" />
+                            </button>
                           </td>
                         </tr>
                       );
