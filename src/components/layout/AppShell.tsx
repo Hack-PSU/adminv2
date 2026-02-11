@@ -50,7 +50,7 @@ export function AppShell({ children }: AppShellProps) {
       <aside
         id="app-sidebar"
         className={cn(
-          "fixed inset-y-0 top-0 left-0 z-20 flex flex-col border-r rounded-2xl border-zinc-200 bg-zinc-50 shadow-sm transition-transform duration-300 md:relative md:h-screen md:transition-none",
+          "fixed inset-y-0 top-0 left-0 z-20 flex flex-col border-r rounded-2xl border-zinc-200 bg-zinc-50 shadow-sm transition-transform duration-300 md:sticky md:top-0 md:h-screen md:transition-none",
           isOpen
             ? "translate-x-0 md:w-[240px] w-3/4"
             : "-translate-x-full md:!translate-x-0 md:w-0 md:border-transparent md:shadow-none",
