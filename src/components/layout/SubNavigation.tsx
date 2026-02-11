@@ -19,7 +19,7 @@ export default function SubNavigation({ items, baseHref }: SubNavigationProps) {
 
   return (
     <nav
-      className="inline-flex w-fit gap-2 rounded-3xl border border-zinc-200 bg-white p-2 shadow-sm"
+      className="inline-flex w-fit gap-2 rounded-xl border border-zinc-200 bg-white p-2 shadow-sm"
       aria-label="Sub sections navigation"
     >
       {items.map((item) => {
@@ -32,10 +32,10 @@ export default function SubNavigation({ items, baseHref }: SubNavigationProps) {
           <Link key={item.href} href={item.href} className="inline-flex">
             <span
               className={cn(
-                "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                "rounded-xl px-4 py-2 text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-zinc-900 text-white"
-                  : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900",
+                  ? "bg-blue-600 text-white"
+                  : "text-zinc-600 hover:bg-blue-50 hover:text-zinc-900",
               )}
             >
               {item.label}
