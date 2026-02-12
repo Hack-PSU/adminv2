@@ -50,10 +50,10 @@ export default function DonutPie({
               nameKey="label"
               innerRadius={innerRadius}
               outerRadius={outerRadius}
-              paddingAngle={3}
-              cornerRadius={6}
-              stroke="#ffffff"
-              strokeWidth={2}
+              paddingAngle={0}
+              cornerRadius={0}
+              stroke="none"
+              strokeWidth={0}
             >
               {data.map((entry, index) => (
                 <Cell
@@ -63,6 +63,7 @@ export default function DonutPie({
               ))}
             </Pie>
             <Tooltip
+              wrapperStyle={{ zIndex: 9999, pointerEvents: "none" }}
               content={({ active, payload }) => {
                 if (!active || !payload?.length) {
                   return null;
