@@ -18,6 +18,8 @@ import {
 const DAY_MS = 1000 * 60 * 60 * 24;
 const MAX_SCHOOL_SLICES = 8;
 const OTHER_SCHOOLS_LABEL = "Other schools";
+const MAX_MAJOR_SLICES = 8;
+const OTHER_MAJORS_LABEL = "Other majors";
 
 function formatLabel(value?: string | null) {
   if (!value) {
@@ -65,6 +67,29 @@ function buildPieData<T>(
     label: getLabel(item),
     value: getValue(item),
   }));
+}
+
+function buildTopSliceData(
+  counts: Record<string, number>,
+  maxSlices: number,
+  otherLabel: string,
+): PieDatum[] {
+  const sorted = Object.entries(counts)
+    .map(([label, value]) => ({ label, value }))
+    .sort((a, b) => b.value - a.value);
+
+  const topSlices = sorted.slice(0, maxSlices);
+  const remainder = sorted.slice(maxSlices);
+  const remainderTotal = remainder.reduce((sum, entry) => sum + entry.value, 0);
+
+  if (remainderTotal > 0) {
+    topSlices.push({
+      label: otherLabel,
+      value: remainderTotal,
+    });
+  }
+
+  return topSlices;
 }
 
 function EmptyState({ message }: { message: string }) {
@@ -313,22 +338,22 @@ export default function AnalyticsSummary() {
       counts[label] = (counts[label] ?? 0) + 1;
     });
 
-    const sorted = Object.entries(counts)
-      .map(([label, value]) => ({ label, value }))
-      .sort((a, b) => b.value - a.value);
+    return buildTopSliceData(counts, MAX_SCHOOL_SLICES, OTHER_SCHOOLS_LABEL);
+  }, [currentHackathonUsers]);
 
-    const major = sorted.slice(0, MAX_SCHOOL_SLICES);
-    const remainder = sorted.slice(MAX_SCHOOL_SLICES);
-    const remainderTotal = remainder.reduce((sum, entry) => sum + entry.value, 0);
-
-    if (remainderTotal > 0) {
-      major.push({
-        label: OTHER_SCHOOLS_LABEL,
-        value: remainderTotal,
-      });
+  const majorData = useMemo<PieDatum[]>(() => {
+    if (!currentHackathonUsers.length) {
+      return [];
     }
 
-    return major;
+    const counts: Record<string, number> = {};
+
+    currentHackathonUsers.forEach((user) => {
+      const label = formatMissingLabel(user.major, ["none", "null"]);
+      counts[label] = (counts[label] ?? 0) + 1;
+    });
+
+    return buildTopSliceData(counts, MAX_MAJOR_SLICES, OTHER_MAJORS_LABEL);
   }, [currentHackathonUsers]);
 
   const travelReimbursementData = useMemo<PieDatum[]>(() => {
@@ -463,6 +488,16 @@ export default function AnalyticsSummary() {
             <Pie data={schoolData} />
           ) : (
             <EmptyState message="No school data yet." />
+          )}
+        </ChartContainer>
+        <ChartContainer
+          title="College Majors"
+          description="Current hackathon participants by major."
+        >
+          {majorData.length ? (
+            <Pie data={majorData} />
+          ) : (
+            <EmptyState message="No major data yet." />
           )}
         </ChartContainer>
         <ChartContainer
