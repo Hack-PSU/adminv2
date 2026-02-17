@@ -79,6 +79,7 @@ interface DataTableProps<TData> {
   onRefresh?: () => void | Promise<void>;
   idField?: keyof TData;
   enableRowSelection?: boolean;
+  enableFilters?: boolean;
   className?: string;
 }
 
@@ -99,6 +100,7 @@ export function DataTable<TData extends Record<string, any>>({
   onRefresh,
   idField = "id" as keyof TData,
   enableRowSelection = true,
+  enableFilters = false,
   className,
 }: DataTableProps<TData>) {
   const [data, setData] = useState<TData[]>(initialData);
@@ -447,93 +449,97 @@ export function DataTable<TData extends Record<string, any>>({
           />
         </div>
 
-        {/* Filters Dropdown */}
-        <div className="relative mt-2">
-          <Button
-            variant="outline"
-            size="default"
-            onClick={() => setFiltersOpen((prev) => !prev)}
-            className="flex items-center gap-2"
-          >
-            <Filter className="h-4 w-4" />
-            Filters
-          </Button>
+        {/* Filters and Actions Container */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-2">
+          {/* Filters Dropdown */}
+          {enableFilters && (
+            <div className="relative">
+              <Button
+                variant="outline"
+                size="default"
+                onClick={() => setFiltersOpen((prev) => !prev)}
+                className="flex items-center gap-2"
+              >
+                <Filter className="h-4 w-4" />
+                Filters
+              </Button>
 
-          {filtersOpen && (
-            <div className="absolute z-50 mt-2 w-[320px] rounded-md border border-zinc-200 bg-white p-4 shadow-lg">
-              
-              {/* Team Filters */}
-              <div className="mb-4">
-                <p className="mb-2 text-sm font-semibold text-zinc-700">Team</p>
-                <div className="flex flex-col gap-1">
-                  {["Communications","Design","Education","Entertainment","Finance","Logistics","Marketing","Sponsorship","Technology"].map(team => (
-                    <label key={team} className="inline-flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={teamFilters.has(team)}
-                        onChange={() => {
-                          const newSet = new Set(teamFilters);
-                          if (newSet.has(team)) newSet.delete(team);
-                          else newSet.add(team);
-                          setTeamFilters(newSet);
-                        }}
-                      />
-                      {team}
-                    </label>
-                  ))}
+              {filtersOpen && (
+                <div className="absolute right-0 z-50 mt-2 w-[320px] rounded-md border border-zinc-200 bg-white p-4 shadow-lg">
+                  
+                  {/* Team Filters */}
+                  <div className="mb-4">
+                    <p className="mb-2 text-sm font-semibold text-zinc-700">Team</p>
+                    <div className="flex flex-col gap-1">
+                      {["Communications","Design","Education","Entertainment","Finance","Logistics","Marketing","Sponsorship","Technology"].map(team => (
+                        <label key={team} className="inline-flex items-center gap-2 text-sm">
+                          <input
+                            type="checkbox"
+                            checked={teamFilters.has(team)}
+                            onChange={() => {
+                              const newSet = new Set(teamFilters);
+                              if (newSet.has(team)) newSet.delete(team);
+                              else newSet.add(team);
+                              setTeamFilters(newSet);
+                            }}
+                          />
+                          {team}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Status Filters */}
+                  <div className="mb-4">
+                    <p className="mb-2 text-sm font-semibold text-zinc-700">Status</p>
+                    <div className="flex flex-col gap-1">
+                      {["Pending","Accepted","Rejected"].map(status => (
+                        <label key={status} className="inline-flex items-center gap-2 text-sm">
+                          <input
+                            type="checkbox"
+                            checked={statusFilters.has(status)}
+                            onChange={() => {
+                              const newSet = new Set(statusFilters);
+                              if (newSet.has(status)) newSet.delete(status);
+                              else newSet.add(status);
+                              setStatusFilters(newSet);
+                            }}
+                          />
+                          {status}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Year Standing Filters */}
+                  <div>
+                    <p className="mb-2 text-sm font-semibold text-zinc-700">Year Standing</p>
+                  <div className="flex flex-col gap-1">
+                    {["Freshman","Sophomore","Junior","Senior","Other"].map(year => (
+                      <label key={year} className="inline-flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={yearFilters.has(year)}
+                          onChange={() => {
+                            const newSet = new Set(yearFilters);
+                            if (newSet.has(year)) newSet.delete(year);
+                            else newSet.add(year);
+                            setYearFilters(newSet);
+                          }}
+                        />
+                        {year}
+                      </label>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* Status Filters */}
-              <div className="mb-4">
-                <p className="mb-2 text-sm font-semibold text-zinc-700">Status</p>
-                <div className="flex flex-col gap-1">
-                  {["Pending","Accepted","Rejected"].map(status => (
-                    <label key={status} className="inline-flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={statusFilters.has(status)}
-                        onChange={() => {
-                          const newSet = new Set(statusFilters);
-                          if (newSet.has(status)) newSet.delete(status);
-                          else newSet.add(status);
-                          setStatusFilters(newSet);
-                        }}
-                      />
-                      {status}
-                    </label>
-                  ))}
-                </div>
               </div>
-
-              {/* Year Standing Filters */}
-              <div>
-                <p className="mb-2 text-sm font-semibold text-zinc-700">Year Standing</p>
-                <div className="flex flex-col gap-1">
-                  {["Freshman","Sophomore","Junior","Senior","Other"].map(year => (
-                    <label key={year} className="inline-flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={yearFilters.has(year)}
-                        onChange={() => {
-                          const newSet = new Set(yearFilters);
-                          if (newSet.has(year)) newSet.delete(year);
-                          else newSet.add(year);
-                          setYearFilters(newSet);
-                        }}
-                      />
-                      {year}
-                    </label>
-                  ))}
-                </div>
-              </div>
-
+            )}
             </div>
           )}
-        </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-2">
+          {/* Actions */}
+          <div className="flex items-center gap-2">
           {onRefresh && (
             <Button
               onClick={handleRefresh}
@@ -564,6 +570,7 @@ export function DataTable<TData extends Record<string, any>>({
               Delete ({selectedRows.size})
             </Button>
           )}
+          </div>
         </div>
       </div>
 

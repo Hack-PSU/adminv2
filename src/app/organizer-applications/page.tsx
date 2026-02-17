@@ -192,6 +192,7 @@ export default function OrganizerApplicationsPage() {
         columns={columns}
         onRefresh={handleRefresh}
         idField="id"
+        enableFilters={true}
       />
       <ViewApplicationModal
         application={selectedApplication}
