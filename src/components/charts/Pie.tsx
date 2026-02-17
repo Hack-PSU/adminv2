@@ -50,8 +50,8 @@ export default function DonutPie({
               nameKey="label"
               innerRadius={innerRadius}
               outerRadius={outerRadius}
-              paddingAngle={0}
-              cornerRadius={0}
+              paddingAngle={1}
+              cornerRadius={2}
               stroke="none"
               strokeWidth={0}
             >
