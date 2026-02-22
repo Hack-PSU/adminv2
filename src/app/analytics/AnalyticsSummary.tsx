@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useAnalyticsSummary } from "@/common/api/analytics/hook";
 import { useAllHackathons } from "@/common/api/hackathon/hook";
 import { useAllRegistrations } from "@/common/api/registration/hook";
@@ -117,11 +117,6 @@ export default function AnalyticsSummary() {
     isError: registrationsError,
   } = useAllRegistrations(true);
   const {
-    data: currentRegistrations = [],
-    isLoading: currentRegistrationsLoading,
-    isError: currentRegistrationsError,
-  } = useAllRegistrations();
-  const {
     data: users = [],
     isLoading: usersLoading,
     isError: usersError,
@@ -131,14 +126,38 @@ export default function AnalyticsSummary() {
     summaryLoading ||
     hackathonsLoading ||
     registrationsLoading ||
-    currentRegistrationsLoading ||
     usersLoading;
   const isError =
     summaryError ||
     hackathonsError ||
     registrationsError ||
-    currentRegistrationsError ||
     usersError;
+
+  const [selectedHackathonId, setSelectedHackathonId] = useState<string>("");
+
+  const orderedHackathons = useMemo(() => {
+    if (!hackathons.length) return [];
+    return [...hackathons].sort((a, b) => {
+      const aTime = normalizeTimestamp(a.startTime) ?? 0;
+      const bTime = normalizeTimestamp(b.startTime) ?? 0;
+      return aTime - bTime;
+    });
+  }, [hackathons]);
+
+  const filteredRegistrations = useMemo(() => {
+    if (!selectedHackathonId) return allRegistrations;
+    return allRegistrations.filter(
+      (reg) => String(reg.hackathonId) === selectedHackathonId,
+    );
+  }, [allRegistrations, selectedHackathonId]);
+
+  const filteredUsers = useMemo(() => {
+    if (!filteredRegistrations.length || !users.length) return [];
+    const registeredUserIds = new Set(
+      filteredRegistrations.map((reg) => reg.userId),
+    );
+    return users.filter((user) => registeredUserIds.has(user.id));
+  }, [filteredRegistrations, users]);
 
   const registrationsData = useMemo<RegistrationBarDatum[]>(() => {
     const registrationSummary = summary?.registrations ?? [];
@@ -156,11 +175,6 @@ export default function AnalyticsSummary() {
     const byId = new Map(
       registrationSummary.map((entry) => [entry.id, entry]),
     );
-    const orderedHackathons = [...hackathons].sort((a, b) => {
-      const aTime = normalizeTimestamp(a.startTime) ?? 0;
-      const bTime = normalizeTimestamp(b.startTime) ?? 0;
-      return aTime - bTime;
-    });
     const knownIds = new Set<string>();
 
     const data: RegistrationBarDatum[] = [];
@@ -187,7 +201,7 @@ export default function AnalyticsSummary() {
     });
 
     return data;
-  }, [summary, hackathons]);
+  }, [summary, orderedHackathons]);
 
   const registrationTotal = useMemo(
     () => registrationsData.reduce((sum, entry) => sum + entry.count, 0),
@@ -257,128 +271,94 @@ export default function AnalyticsSummary() {
     return timeline;
   }, [allRegistrations, hackathons]);
 
-  const genderData = useMemo(
-    () =>
-      buildPieData(
-        summary?.gender,
-        (entry) => formatLabel(entry.gender),
-        (entry) => entry.count,
-      ),
-    [summary],
-  );
+  const genderData = useMemo<PieDatum[]>(() => {
+    if (!filteredUsers.length) return [];
+    const counts: Record<string, number> = {};
+    filteredUsers.forEach((user) => {
+      const label = formatLabel(user.gender);
+      counts[label] = (counts[label] ?? 0) + 1;
+    });
+    return Object.entries(counts).map(([label, value]) => ({ label, value }));
+  }, [filteredUsers]);
 
-  const raceData = useMemo(
-    () =>
-      buildPieData(
-        summary?.race,
-        (entry) => formatMissingLabel(entry.race, ["null"]),
-        (entry) => entry.count,
-      ),
-    [summary],
-  );
+  const raceData = useMemo<PieDatum[]>(() => {
+    if (!filteredUsers.length) return [];
+    const counts: Record<string, number> = {};
+    filteredUsers.forEach((user) => {
+      const label = formatMissingLabel(user.race, ["null"]);
+      counts[label] = (counts[label] ?? 0) + 1;
+    });
+    return Object.entries(counts).map(([label, value]) => ({ label, value }));
+  }, [filteredUsers]);
 
-  const academicYearData = useMemo(
-    () =>
-      buildPieData(
-        summary?.academicYear,
-        (entry) => formatLabel(entry.academicYear),
-        (entry) => entry.count,
-      ),
-    [summary],
-  );
+  const academicYearData = useMemo<PieDatum[]>(() => {
+    if (!filteredRegistrations.length) return [];
+    const counts: Record<string, number> = {};
+    filteredRegistrations.forEach((reg) => {
+      const label = formatLabel(reg.academicYear);
+      counts[label] = (counts[label] ?? 0) + 1;
+    });
+    return Object.entries(counts).map(([label, value]) => ({ label, value }));
+  }, [filteredRegistrations]);
 
-  const codingExperienceData = useMemo(
-    () =>
-      buildPieData(
-        summary?.codingExp,
-        (entry) => formatMissingLabel(entry.codingExperience, ["none"]),
-        (entry) => entry.count,
-      ),
-    [summary],
-  );
-
-  const currentHackathonUsers = useMemo(() => {
-    if (!currentRegistrations.length || !users.length) {
-      return [];
-    }
-
-    const registeredUserIds = new Set(
-      currentRegistrations.map((reg) => reg.userId),
-    );
-    return users.filter((user) => registeredUserIds.has(user.id));
-  }, [currentRegistrations, users]);
+  const codingExperienceData = useMemo<PieDatum[]>(() => {
+    if (!filteredRegistrations.length) return [];
+    const counts: Record<string, number> = {};
+    filteredRegistrations.forEach((reg) => {
+      const label = formatMissingLabel(reg.codingExperience, ["none"]);
+      counts[label] = (counts[label] ?? 0) + 1;
+    });
+    return Object.entries(counts).map(([label, value]) => ({ label, value }));
+  }, [filteredRegistrations]);
 
   const shirtSizeData = useMemo<PieDatum[]>(() => {
-    if (!currentHackathonUsers.length) {
-      return [];
-    }
-
+    if (!filteredUsers.length) return [];
     const counts: Record<string, number> = {};
-
-    currentHackathonUsers.forEach((user) => {
+    filteredUsers.forEach((user) => {
       const label = formatLabel(user.shirtSize);
       counts[label] = (counts[label] ?? 0) + 1;
     });
-
-    return Object.entries(counts).map(([label, value]) => ({
-      label,
-      value,
-    }));
-  }, [currentHackathonUsers]);
+    return Object.entries(counts).map(([label, value]) => ({ label, value }));
+  }, [filteredUsers]);
 
   const schoolData = useMemo<PieDatum[]>(() => {
-    if (!currentHackathonUsers.length) {
-      return [];
-    }
-
+    if (!filteredUsers.length) return [];
     const counts: Record<string, number> = {};
-
-    currentHackathonUsers.forEach((user) => {
+    filteredUsers.forEach((user) => {
       const label = formatLabel(user.university);
       counts[label] = (counts[label] ?? 0) + 1;
     });
-
     return buildTopSliceData(counts, MAX_SCHOOL_SLICES, OTHER_SCHOOLS_LABEL);
-  }, [currentHackathonUsers]);
+  }, [filteredUsers]);
 
   const majorData = useMemo<PieDatum[]>(() => {
-    if (!currentHackathonUsers.length) {
-      return [];
-    }
-
+    if (!filteredUsers.length) return [];
     const counts: Record<string, number> = {};
-
-    currentHackathonUsers.forEach((user) => {
+    filteredUsers.forEach((user) => {
       const label = formatMissingLabel(user.major, ["none", "null"]);
       counts[label] = (counts[label] ?? 0) + 1;
     });
-
     return buildTopSliceData(counts, MAX_MAJOR_SLICES, OTHER_MAJORS_LABEL);
-  }, [currentHackathonUsers]);
+  }, [filteredUsers]);
 
   const travelReimbursementData = useMemo<PieDatum[]>(() => {
-    if (!currentRegistrations.length) {
-      return [];
-    }
-
+    if (!filteredRegistrations.length) return [];
     const counts = {
       "Requesting Reimbursement": 0,
       "Not Requesting Reimbursement": 0,
     };
-
-    currentRegistrations.forEach((registration) => {
+    filteredRegistrations.forEach((registration) => {
       if (registration.travelReimbursement === true) {
         counts["Requesting Reimbursement"] += 1;
       } else {
         counts["Not Requesting Reimbursement"] += 1;
       }
     });
-
     return Object.entries(counts).map(([label, value]) => ({
       label,
       value,
     }));
-  }, [currentRegistrations]);
+  }, [filteredRegistrations]);
 
   if (isLoading) {
     return (
@@ -429,7 +409,34 @@ export default function AnalyticsSummary() {
         <RegistrationTimeline data={registrationTimeline} />
       </ChartContainer>
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <h2 className="text-lg font-semibold text-zinc-900">
+            Demographics & Distribution
+          </h2>
+          <div className="flex items-center gap-2">
+            <label
+              htmlFor="hackathon-filter"
+              className="text-sm font-medium text-zinc-600"
+            >
+              Filter by hackathon
+            </label>
+            <select
+              id="hackathon-filter"
+              value={selectedHackathonId}
+              onChange={(e) => setSelectedHackathonId(e.target.value)}
+              className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+            >
+              <option value="">All hackathons</option>
+              {orderedHackathons.map((hackathon) => (
+                <option key={hackathon.id} value={hackathon.id}>
+                  {formatLabel(hackathon.name)}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         <ChartContainer
           title="Gender"
           description="Self-reported gender distribution."
@@ -472,7 +479,7 @@ export default function AnalyticsSummary() {
         </ChartContainer>
         <ChartContainer
           title="Shirt Size Distribution"
-          description="Current hackathon shirt size requests."
+          description="Shirt size requests by selected hackathon(s)."
         >
           {shirtSizeData.length ? (
             <Pie data={shirtSizeData} />
@@ -482,7 +489,7 @@ export default function AnalyticsSummary() {
         </ChartContainer>
         <ChartContainer
           title="Participant Schools"
-          description="Universities represented in the current hackathon."
+          description="Universities represented in selected hackathon(s)."
         >
           {schoolData.length ? (
             <Pie data={schoolData} />
@@ -492,7 +499,7 @@ export default function AnalyticsSummary() {
         </ChartContainer>
         <ChartContainer
           title="College Majors"
-          description="Current hackathon participants by major."
+          description="Participants by major in selected hackathon(s)."
         >
           {majorData.length ? (
             <Pie data={majorData} />
@@ -502,19 +509,15 @@ export default function AnalyticsSummary() {
         </ChartContainer>
         <ChartContainer
           title="Travel Reimbursement Requests"
-          description="Share of current hackers requesting travel support."
+          description="Share of hackers requesting travel support."
         >
           {travelReimbursementData.length ? (
-            <div className="space-y-3">
-              <Pie data={travelReimbursementData} />
-              <p className="text-xs italic text-zinc-400">
-                Fall 2025: feature implemented after ~90 registrations
-              </p>
-            </div>
+            <Pie data={travelReimbursementData} />
           ) : (
             <EmptyState message="No reimbursement data yet." />
           )}
         </ChartContainer>
+        </div>
       </div>
     </div>
   );
