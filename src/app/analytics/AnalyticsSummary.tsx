@@ -242,7 +242,7 @@ export default function AnalyticsSummary() {
       });
 
       let previousCount = 0;
-      for (let day = -maxDaysBeforeEvent; day <= 0; day += 1) {
+      for (let day = -100; day <= 0; day += 1) {
         const count = dailyCounts[day] ?? previousCount;
         timeline.push({
           day,

@@ -4,8 +4,12 @@ import {
   getRegistration,
   createRegistration,
   updateRegistration,
+  updateApplicationStatus,
   replaceRegistration,
   deleteRegistration,
+  getPennStateRegistrationScores,
+  getOtherRegistrationScores,
+  updateApplicationStatusBulk,
 } from "./provider";
 import {
   RegistrationEntity,
@@ -85,3 +89,37 @@ export function useDeleteRegistration() {
     },
   });
 }
+
+export function usePennStateRegistrationScores() {
+  return useQuery({
+    queryKey: ["registrationScores", "psu"],
+    queryFn: () => getPennStateRegistrationScores(),
+  });
+}
+
+export function useOtherRegistrationScores() {
+  return useQuery({
+    queryKey: ["registrationScores", "other"],
+    queryFn: () => getOtherRegistrationScores(),
+  });
+}
+
+export function useUpdateApplicationStatus(id: number, status: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: () => updateApplicationStatus(id, status),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["registrationScores"] });
+      },
+    });
+}
+
+export function useUpdateApplicationStatusBulk(ids: string[], status: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: () => updateApplicationStatusBulk(ids, status),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["registrationScores"] });
+      },
+    });
+  }

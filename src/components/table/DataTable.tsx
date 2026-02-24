@@ -77,6 +77,7 @@ interface DataTableProps<TData> {
   onSave?: (data: TData[]) => void | Promise<void>;
   onDelete?: (ids: Array<string | number>) => void | Promise<void>;
   onRefresh?: () => void | Promise<void>;
+  onSelectionChange?: (selectedIds: Array<string | number>) => void;
   idField?: keyof TData;
   enableRowSelection?: boolean;
   enableFilters?: boolean;
@@ -98,6 +99,7 @@ export function DataTable<TData extends Record<string, any>>({
   onSave,
   onDelete,
   onRefresh,
+  onSelectionChange,
   idField = "id" as keyof TData,
   enableRowSelection = true,
   enableFilters = false,
@@ -122,6 +124,13 @@ export function DataTable<TData extends Record<string, any>>({
   useEffect(() => {
     setData(initialData);
   }, [initialData]);
+
+  // Call onSelectionChange when selectedRows changes
+  useEffect(() => {
+    if (onSelectionChange) {
+      onSelectionChange(Array.from(selectedRows));
+    }
+  }, [selectedRows, onSelectionChange]);
 
   // Handle cell value changes
   const handleCellChange = (

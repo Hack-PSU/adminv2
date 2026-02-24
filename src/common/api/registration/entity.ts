@@ -21,6 +21,19 @@ export interface RegistrationEntity {
   veteran: string;
 }
 
+export interface RegistrationScoreEntity extends RegistrationEntity {
+  mu: number;
+  sigmaSquared: number;
+  prioritized: boolean;
+  firstName?: string;
+  lastName?: string;
+  applicationStatus?: string;
+  email?: string;
+  university?: string;
+  major?: string;
+  travelCost?: number;
+}
+
 export interface RegistrationCreateEntity
   extends Omit<RegistrationEntity, "id"> {}
 
