@@ -10,7 +10,45 @@ import { SponsorEntity } from "@/common/api/sponsor/entity";
 import { Button } from "@/components/ui/button";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import AddNewSponsorModal from "@/components/modal/AddNewSponsorModal";
+import { Controller, FormProvider, useForm } from "react-hook-form";
+import Select from "react-select";
+import Dropzone from "@/components/ui/dropzone";
 
+enum SponsorLevels {
+  BRONZE = "bronze",
+  SILVER = "silver",
+  GOLD = "gold",
+  PLATINUM = "platinum",
+  EMERALD = "emerald",
+}
+
+enum SponsorTypes {
+  SPONSOR = "sponsor",
+  PARTNER = "partner",
+}
+
+interface SponsorOption {
+  value: SponsorLevels;
+  label: string;
+}
+
+interface SponsorTypeOption {
+  value: SponsorTypes;
+  label: string;
+}
+
+const SponsorLevelOptions: SponsorOption[] = [
+  { value: SponsorLevels.BRONZE, label: "Bronze" },
+  { value: SponsorLevels.SILVER, label: "Silver" },
+  { value: SponsorLevels.GOLD, label: "Gold" },
+  { value: SponsorLevels.PLATINUM, label: "Platinum" },
+  { value: SponsorLevels.EMERALD, label: "Emerald" },
+];
+
+const SponsorTypeOptions: SponsorTypeOption[] = [
+  { value: SponsorTypes.SPONSOR, label: "Sponsor" },
+  { value: SponsorTypes.PARTNER, label: "Event Partner" },
+];
 export default function SponsorshipPage() {
   const { data: sponsors = [], isLoading, refetch } = useAllSponsors();
   const deleteSponsorMutation = useDeleteSponsor();
@@ -19,41 +57,75 @@ export default function SponsorshipPage() {
   // Modal specific
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingSponsor, setEditingSponsor] = useState<SponsorEntity | null>(null);
-  const [editFormData, setEditFormData] = useState({
-    name: "",
-    level: "",
-    sponsorType: "",
-    link: "",
+  const [deletingSponsor, setDeletingSponsor] = useState<SponsorEntity | null>(null);
+
+  interface IEditFormInput {
+    name: string;
+    level: SponsorOption;
+    sponsorType: SponsorTypeOption;
+    website: string;
+    lightLogo: File | null;
+    darkLogo: File | null;
+  }
+
+  const methods = useForm<IEditFormInput>({
+    defaultValues: {
+      name: "",
+      level: { value: SponsorLevels.GOLD, label: "Gold" },
+      sponsorType: { value: SponsorTypes.SPONSOR, label: "Sponsor" },
+      website: "",
+      lightLogo: null,
+      darkLogo: null,
+    },
   });
+
+  const { register, control, watch, handleSubmit, reset } = methods;
 
   const openEditModal = (sponsor: SponsorEntity) => {
     setEditingSponsor(sponsor);
-    setEditFormData({
+    const levelOption = SponsorLevelOptions.find(
+      (opt) => opt.value === sponsor.level
+    ) || { value: SponsorLevels.GOLD, label: "Gold" };
+    const typeOption = SponsorTypeOptions.find(
+      (opt) => opt.value === sponsor.sponsorType
+    ) || { value: SponsorTypes.SPONSOR, label: "Sponsor" };
+
+    reset({
       name: sponsor.name,
-      level: sponsor.level,
-      sponsorType: sponsor.sponsorType || "",
-      link: sponsor.link || "",
+      level: levelOption,
+      sponsorType: typeOption,
+      website: sponsor.link || "",
+      lightLogo: null,
+      darkLogo: null,
     });
   };
 
   const closeEditModal = () => {
     setEditingSponsor(null);
-    setEditFormData({
-      name: "",
-      level: "",
-      sponsorType: "",
-      link: "",
-    });
+    reset();
   };
 
-  const handleEditSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const name = watch("name");
+  const website = watch("website");
+  const lightLogo = watch("lightLogo");
+  const darkLogo = watch("darkLogo");
+
+  const handleEditSubmit = async (data: IEditFormInput) => {
     if (!editingSponsor) return;
+    if (!name.trim() || !website.trim() || (!lightLogo && !darkLogo)) return;
+
+    const formData = new FormData();
+    formData.append("name", data.name.trim());
+    formData.append("level", data.level.value);
+    formData.append("sponsorType", data.sponsorType.value);
+    formData.append("link", data.website);
+    if (data.lightLogo) formData.append("lightLogo", data.lightLogo);
+    if (data.darkLogo) formData.append("darkLogo", data.darkLogo);
 
     try {
       await updateSponsorMutation.mutateAsync({
         id: editingSponsor.id,
-        data: editFormData,
+        data: formData as any,
       });
       closeEditModal();
       await refetch();
@@ -62,11 +134,23 @@ export default function SponsorshipPage() {
     }
   };
 
-  const handleDeleteSingle = async (id: number) => {
-    if (confirm("Are you sure you want to delete this sponsor?")) {
-      await deleteSponsorMutation.mutateAsync(id);
+  const handleDeleteSingle = (sponsor: SponsorEntity) => {
+    setDeletingSponsor(sponsor);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingSponsor) return;
+    try {
+      await deleteSponsorMutation.mutateAsync(deletingSponsor.id);
+      setDeletingSponsor(null);
       await refetch();
+    } catch (error) {
+      console.error("Error deleting sponsor:", error);
     }
+  };
+
+  const cancelDelete = () => {
+    setDeletingSponsor(null);
   };
 
   // Define columns - all static (not editable)
@@ -113,7 +197,7 @@ export default function SponsorshipPage() {
             <Pencil className="h-4 w-4" />
           </button>
           <button
-            onClick={() => handleDeleteSingle(row.id)}
+            onClick={() => handleDeleteSingle(row)}
             className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
             title="Delete sponsor"
           >
@@ -164,95 +248,172 @@ export default function SponsorshipPage() {
 
       {/* Edit Modal */}
       {editingSponsor && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Edit Sponsor</h2>
-              <button
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-3xl space-y-4 rounded-lg bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-semibold text-zinc-900">
+                  Edit Sponsor
+                </h2>
+                <p className="text-sm text-zinc-500">
+                  Update sponsor details.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
                 onClick={closeEditModal}
-                className="text-zinc-400 hover:text-zinc-600"
+                className="px-2 py-1"
               >
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+                Close
+              </Button>
             </div>
+            <FormProvider {...methods}>
+              <form onSubmit={handleSubmit(handleEditSubmit)} className="flex flex-col gap-3">
+                <div className="flex flex-col gap-3 items-center sm:justify-between sm:flex-row">
+                  <div className="w-full space-y-1">
+                    <label className="text-sm font-medium text-zinc-800">Name</label>
+                    <input
+                      className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      placeholder="Enter sponsor's name"
+                      {...register("name")}
+                    />
+                  </div>
 
-            <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-zinc-700 mb-1">
-                  Sponsor Name
-                </label>
-                <input
-                  type="text"
-                  value={editFormData.name}
-                  onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                  className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  required
-                />
-              </div>
+                  <div className="w-full space-y-1">
+                    <label className="text-sm font-medium text-zinc-800">Level</label>
+                    <Controller
+                      name="level"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          className="text-sm"
+                          {...field}
+                          options={SponsorLevelOptions}
+                        />
+                      )}
+                    />
+                  </div>
+                </div>
+                <div className="w-full space-y-1">
+                  <label className="text-sm font-medium text-zinc-800">Sponsor Type</label>
+                  <Controller
+                    name="sponsorType"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        className="text-sm"
+                        {...field}
+                        options={SponsorTypeOptions}
+                      />
+                    )}
+                  />
+                </div>
+                <div className="w-full space-y-1">
+                  <label className="text-sm font-medium text-zinc-800">Website</label>
+                  <input
+                    className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="Enter website name"
+                    {...register("website")}
+                  />
+                </div>
+                <div className="flex flex-col gap-3 items-center sm:justify-between sm:flex-row">
+                  <div className="w-full space-y-1">
+                    <label className="text-sm font-medium text-zinc-800">Light Logo</label>
+                    <Dropzone
+                      name="lightLogo"
+                      control={control}
+                      rules={{
+                        validate: (value) => {
+                          if (!darkLogo && !value) {
+                            return false;
+                          }
+                          return true;
+                        },
+                      }}
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-zinc-700 mb-1">
-                  Level
-                </label>
-                <input
-                  type="text"
-                  value={editFormData.level}
-                  onChange={(e) => setEditFormData({ ...editFormData, level: e.target.value })}
-                  className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-zinc-700 mb-1">
-                  Type
-                </label>
-                <input
-                  type="text"
-                  value={editFormData.sponsorType}
-                  onChange={(e) => setEditFormData({ ...editFormData, sponsorType: e.target.value })}
-                  className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  placeholder="Optional"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-zinc-700 mb-1">
-                  Website
-                </label>
-                <input
-                  type="url"
-                  value={editFormData.link}
-                  onChange={(e) => setEditFormData({ ...editFormData, link: e.target.value })}
-                  className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  placeholder="https://"
-                />
-              </div>
-
-              <div className="flex gap-3 justify-end pt-4">
-                <button
-                  type="button"
-                  onClick={closeEditModal}
-                  className="px-4 py-2 text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-md transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                  disabled={updateSponsorMutation.isPending}
-                >
-                  {updateSponsorMutation.isPending ? "Saving..." : "Save Changes"}
-                </button>
-              </div>
-            </form>
+                  <div className="w-full space-y-1">
+                    <label className="text-sm font-medium text-zinc-800">Dark Logo</label>
+                    <Dropzone
+                      name="darkLogo"
+                      control={control}
+                      rules={{
+                        validate: (value) => {
+                          if (!lightLogo && !value) {
+                            return false;
+                          }
+                          return true;
+                        },
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={closeEditModal}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={
+                      updateSponsorMutation.isPending ||
+                      !name.trim() ||
+                      !website.trim() ||
+                      (!lightLogo && !darkLogo)
+                    }
+                  >
+                    {updateSponsorMutation.isPending
+                      ? "Saving..."
+                      : "Save Changes"}
+                  </Button>
+                </div>
+              </form>
+            </FormProvider>
           </div>
         </div>
       )}
 
       {showAddModal && (<AddNewSponsorModal totalSponsors={sponsors.length} closeModal={closeModal}/>)}
+
+      {/* Delete Confirmation Modal */}
+      {deletingSponsor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl">
+            <div className="flex flex-col gap-4">
+              <div>
+                <h2 className="text-lg font-semibold text-zinc-900">
+                  Delete Sponsor
+                </h2>
+                <p className="text-sm text-zinc-500 mt-1">
+                  Are you sure you want to delete <span className="font-medium">{deletingSponsor.name}</span>? This action cannot be undone.
+                </p>
+              </div>
+              <div className="flex items-center justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={cancelDelete}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={confirmDelete}
+                  disabled={deleteSponsorMutation.isPending}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  {deleteSponsorMutation.isPending ? "Deleting..." : "Delete"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
