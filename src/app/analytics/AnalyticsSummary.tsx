@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAnalyticsSummary } from "@/common/api/analytics/hook";
 import { useAllHackathons } from "@/common/api/hackathon/hook";
 import { useAllRegistrations } from "@/common/api/registration/hook";
 import { useAllUsers } from "@/common/api/user/hook";
+import { useActiveHackathonForStatic } from "@/common/api/hackathon/hook";
 import {
   ChartContainer,
   Pie,
@@ -121,6 +122,9 @@ export default function AnalyticsSummary() {
     isLoading: usersLoading,
     isError: usersError,
   } = useAllUsers();
+  const {
+    data: activeHackathon,
+  } = useActiveHackathonForStatic();
 
   const isLoading =
     summaryLoading ||
@@ -134,6 +138,13 @@ export default function AnalyticsSummary() {
     usersError;
 
   const [selectedHackathonId, setSelectedHackathonId] = useState<string>("");
+
+  // Set selected hackathon to active hackathon when it loads
+  useEffect(() => {
+    if (activeHackathon?.id) {
+      setSelectedHackathonId(activeHackathon.id);
+    }
+  }, [activeHackathon?.id]);
 
   const orderedHackathons = useMemo(() => {
     if (!hackathons.length) return [];
@@ -427,7 +438,6 @@ export default function AnalyticsSummary() {
               onChange={(e) => setSelectedHackathonId(e.target.value)}
               className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
             >
-              <option value="">All hackathons</option>
               {orderedHackathons.map((hackathon) => (
                 <option key={hackathon.id} value={hackathon.id}>
                   {formatLabel(hackathon.name)}
