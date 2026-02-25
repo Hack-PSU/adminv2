@@ -49,7 +49,7 @@ export function AppShell({ children }: AppShellProps) {
         className={cn(
           "fixed inset-y-0 top-0 left-0 z-20 flex flex-col border-r rounded-2xl border-zinc-200 bg-zinc-50 shadow-sm transition-transform duration-300 md:sticky md:top-0 md:h-screen md:transition-none",
           isOpen
-            ? "translate-x-0 md:w-[240px] w-3/4"
+            ? "translate-x-0 md:w-[240px] w-1/2 sm:w-3/4"
             : "-translate-x-full md:!translate-x-0 md:w-0 md:border-transparent md:shadow-none",
         )}
         aria-hidden={!isOpen}
@@ -61,15 +61,15 @@ export function AppShell({ children }: AppShellProps) {
             isOpen ? "opacity-100" : "pointer-events-none opacity-0",
           )}
         >
-        <div className="flex items-center gap-3 px-4 py-4">
-            <div className="relative h-10 w-10 overflow-hidden rounded-md">
+        <div className="flex items-center gap-2 px-2 py-2 sm:gap-3 sm:px-4 sm:py-4">
+            <div className="relative h-8 w-8 overflow-hidden rounded-md sm:h-10 sm:w-10">
               <Image src="/logo.svg" alt="HackPSU" fill sizes="40px" priority />
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-semibold tracking-wide text-black-600">
+              <span className="text-xs font-semibold tracking-wide text-black-600 sm:text-sm">
                 HackPSU
               </span>
-              <span className="text-xs text-zinc-500">Admin Dashboard</span>
+              <span className="hidden text-xs text-zinc-500 sm:block">Admin Dashboard</span>
             </div>
             <Button
               variant="outline"
@@ -78,11 +78,12 @@ export function AppShell({ children }: AppShellProps) {
               aria-label="Toggle navigation"
               aria-expanded={isOpen}
               aria-controls="app-sidebar"
+              className="h-8 w-8 sm:h-10 sm:w-10"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </div>
-          <nav className="flex-1 space-y-1 overflow-y-auto px-2 pb-4">
+          <nav className="flex-1 space-y-1 overflow-y-auto px-1 pb-4 sm:px-2">
             {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
               const isActive =
                 pathname === href || pathname.startsWith(`${href}/`);
@@ -90,13 +91,13 @@ export function AppShell({ children }: AppShellProps) {
                 <Link key={href} href={href} className="block">
                   <span
                     className={cn(
-                      "group flex items-center gap-3 rounded-md px-3 py-4 text-md font-medium transition-colors",
+                      "group flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium transition-colors sm:gap-3 sm:px-3 sm:py-4 sm:text-md",
                       isActive
                         ? "bg-zinc-100 text-black-700"
                         : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900",
                     )}
                   >
-                    <Icon className="h-5 w-5" aria-hidden="true" />
+                    <Icon className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
                     <span>{label}</span>
                   </span>
                 </Link>
@@ -110,16 +111,16 @@ export function AppShell({ children }: AppShellProps) {
            variant="outline"
            size="icon"
            onClick={() => setIsOpen(true)}
-           className="fixed top-4 left-4 z-30"
+           className="fixed top-2 left-2 z-30 h-8 w-8 sm:top-4 sm:left-4 sm:h-10 sm:w-10"
            aria-label="Open navigation"
          >
-           <Menu className="h-5 w-5" />
+           <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
          </Button>
        )}
 
 
       <main className="flex-1 overflow-x-hidden">
-        <div className="min-h-screen px-6 pb-10 pt-16 sm:px-10">{children}</div>
+        <div className="min-h-screen px-3 pb-10 pt-12 sm:px-6 sm:pt-16 md:px-10">{children}</div>
       </main>
     </div>
   );
