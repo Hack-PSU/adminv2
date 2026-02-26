@@ -19,7 +19,7 @@ export default function SubNavigation({ items, baseHref }: SubNavigationProps) {
 
   return (
     <nav
-      className="flex flex-wrap w-fit gap-1 rounded-xl border border-zinc-200 bg-white p-1 shadow-sm sm:gap-2 sm:p-2"
+      className="flex flex-wrap w-fit gap-1 rounded-2xl border border-zinc-200 bg-white p-1 shadow-sm sm:gap-2 sm:p-2"
       aria-label="Sub sections navigation"
     >
       {items.map((item) => {
