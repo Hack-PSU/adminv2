@@ -219,6 +219,8 @@ export default function AnalyticsSummary() {
     [registrationsData],
   );
 
+  const activeHackathonTotal = filteredRegistrations.length;
+
   const registrationTimeline = useMemo<TimelineDataPoint[]>(() => {
     if (!allRegistrations.length || !hackathons.length) {
       return [];
@@ -397,9 +399,9 @@ export default function AnalyticsSummary() {
           <div className="w-full space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <p className="text-sm text-zinc-500">Total registrations</p>
+                <p className="text-sm text-zinc-500">{activeHackathon?.name ?? "Active Hackathon"} registrations</p>
                 <p className="text-3xl font-semibold text-zinc-900">
-                  {registrationTotal.toLocaleString()}
+                  {activeHackathonTotal.toLocaleString()}
                 </p>
               </div>
               <p className="text-xs text-zinc-400">
