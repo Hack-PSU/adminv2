@@ -23,12 +23,17 @@ export interface CodingExpCounts extends CountsResponse {
   codingExperience: string;
 }
 
+export interface AllergenCounts extends CountsResponse {
+  allergen: string;
+}
+
 export interface AnalyticsSummaryResponse {
   registrations: RegistrationCounts[];
   gender: GenderCounts[];
   race: RaceCounts[];
   academicYear: AcademicYearCounts[];
   codingExp: CodingExpCounts[];
+  allergens: AllergenCounts[];
 }
 
 export interface AnalyticsScansResponse {

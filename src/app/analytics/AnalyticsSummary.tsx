@@ -371,6 +371,15 @@ export default function AnalyticsSummary() {
     }));
   }, [filteredRegistrations]);
 
+  const allergyData = useMemo<PieDatum[]>(() => {
+    const allergies = summary?.allergens ?? [];
+    return buildPieData(
+      allergies,
+      (item) => formatLabel(item.allergen),
+      (item) => item.count,
+    );
+  }, [summary?.allergens]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12 text-zinc-500">
@@ -525,6 +534,16 @@ export default function AnalyticsSummary() {
             <Pie data={travelReimbursementData} />
           ) : (
             <EmptyState message="No reimbursement data yet." />
+          )}
+        </ChartContainer>
+        <ChartContainer
+          title="Allergies"
+          description="Allergen breakdown for selected hackathon."
+        >
+          {allergyData.length ? (
+            <Pie data={allergyData} />
+          ) : (
+            <EmptyState message="No allergy data yet." />
           )}
         </ChartContainer>
         </div>
