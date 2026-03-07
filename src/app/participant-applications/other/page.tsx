@@ -144,6 +144,8 @@ export default function OtherApplicationsPage() {
           accepted: { bg: "bg-green-100", text: "text-green-800", label: "Accepted" },
           rejected: { bg: "bg-red-100", text: "text-red-800", label: "Rejected" },
           waitlisted: { bg: "bg-blue-100", text: "text-blue-800", label: "Waitlisted" },
+          confirmed: { bg: "bg-green-100", text: "text-green-800", label: "Confirmed" },
+          declined: { bg: "bg-red-100", text: "text-red-800", label: "Declined" },
         };
         const config = statusConfig[statusValue] || { bg: "bg-zinc-100", text: "text-zinc-800", label: String(value) };
         return (
