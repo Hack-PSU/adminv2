@@ -1,6 +1,6 @@
 "use client";
 
-export default function AnalyticsAttendancePage(){
+export default function AnalyticsApplicationsPage(){
     return(
         <div className="space y-4">
 
