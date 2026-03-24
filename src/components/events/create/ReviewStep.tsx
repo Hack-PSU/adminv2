@@ -54,6 +54,11 @@ export function ReviewStep({
         <div>
           <h3 className="text-sm font-semibold text-zinc-500 uppercase mb-2">Event Type</h3>
           <p className="text-base text-zinc-900">{getEventTypeLabel(formData.type)}</p>
+          {formData.type === EventType.food && (
+            <p className="text-sm text-zinc-600 mt-1">
+              Fast Pass: {formData.fastPass ? "Yes" : "No"}
+            </p>
+          )}
         </div>
 
         {/* Event Details */}

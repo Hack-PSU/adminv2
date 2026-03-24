@@ -18,6 +18,13 @@ export function EventTypeStep({
   onBack,
   isFirstStep,
 }: EventTypeStepProps) {
+  const handleTypeChange = (value: EventType | "") => {
+    updateFormData({
+      type: value,
+      fastPass: value === EventType.food ? formData.fastPass : false,
+    });
+  };
+
   const handleNext = () => {
     if (formData.type) {
       onNext();
@@ -38,7 +45,7 @@ export function EventTypeStep({
         <select
           id="eventType"
           value={formData.type}
-          onChange={(e) => updateFormData({ type: e.target.value as EventType })}
+          onChange={(e) => handleTypeChange(e.target.value as EventType | "")}
           className="w-full px-4 py-3 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         >
@@ -49,6 +56,20 @@ export function EventTypeStep({
           <option value={EventType.checkIn}>Check-in</option>
         </select>
       </div>
+
+      {formData.type === EventType.food && (
+        <div>
+          <label className="inline-flex items-center gap-2 text-sm font-medium text-zinc-700">
+            <input
+              type="checkbox"
+              checked={formData.fastPass}
+              onChange={(e) => updateFormData({ fastPass: e.target.checked })}
+              className="h-4 w-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500"
+            />
+            This food event uses Fast Pass
+          </label>
+        </div>
+      )}
 
       <div className="flex justify-between pt-4">
         <button
