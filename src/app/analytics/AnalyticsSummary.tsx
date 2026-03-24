@@ -445,14 +445,13 @@ export default function AnalyticsSummary() {
   }, [filteredUsers]);
 
   const raceData = useMemo<PieDatum[]>(() => {
-    if (!filteredUsers.length) return [];
-    const counts: Record<string, number> = {};
-    filteredUsers.forEach((user) => {
-      const label = formatMissingLabel(user.race, ["null"]);
-      counts[label] = (counts[label] ?? 0) + 1;
-    });
-    return Object.entries(counts).map(([label, value]) => ({ label, value }));
-  }, [filteredUsers]);
+    const races = summary?.race ?? [];
+    return buildPieData(
+      races,
+      (item) => formatLabel(item.race),
+      (item) => item.count,
+    );
+  }, [summary?.race]);
 
   const academicYearData = useMemo<PieDatum[]>(() => {
     if (!filteredRegistrations.length) return [];
