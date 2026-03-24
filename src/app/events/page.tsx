@@ -26,6 +26,7 @@ interface EventFormData {
   wsRelevantSkills: string;
   wsUrls: string[];
   icon: File | null;
+  fastPass: boolean;
 }
 
 export default function EventsPage() {
@@ -49,6 +50,7 @@ export default function EventsPage() {
     wsRelevantSkills: "",
     wsUrls: [],
     icon: null,
+    fastPass: false,
   });
 
   const openEditModal = (event: EventEntityResponse) => {
@@ -57,6 +59,7 @@ export default function EventsPage() {
       name: event.name,
       type: event.type as EventType,
       description: event.description || "",
+      fastPass: event.fastPass || false,
       locationId: event.locationId ? String(event.locationId) : "",
       startTime: new Date(event.startTime).toISOString().slice(0, 16),
       endTime: new Date(event.endTime).toISOString().slice(0, 16),
@@ -79,6 +82,7 @@ export default function EventsPage() {
     formDataToSubmit.append("locationId", formData.locationId);
     formDataToSubmit.append("startTime", new Date(formData.startTime).getTime().toString());
     formDataToSubmit.append("endTime", new Date(formData.endTime).getTime().toString());
+    formDataToSubmit.append("fastPass", String(formData.fastPass));
     
     if (formData.type === EventType.workshop) {
       formDataToSubmit.append("wsPresenterNames", formData.wsPresenterNames);
@@ -307,6 +311,19 @@ export default function EventsPage() {
                 />
               </div>
 
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="fastPass"
+                  checked={formData.fastPass}
+                  onChange={(e) => setFormData({ ...formData, fastPass: e.target.checked })}
+                  className="h-4 w-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500"
+                />
+                <label htmlFor="fastPass" className="text-sm font-medium text-zinc-700">
+                  Fast Pass Event
+                </label>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-zinc-700 mb-1">
@@ -415,3 +432,4 @@ export default function EventsPage() {
     </section>
   );
 }
+
