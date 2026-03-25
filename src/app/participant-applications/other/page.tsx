@@ -7,6 +7,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ViewParticipantApplicationModal from "@/components/modal/ViewParticipantApplicationModal";
+import StatusBreakdownBar from "@/components/StatusBreakdownBar";
 
 export default function OtherApplicationsPage() {
   const { data: applicationsRaw = [], isLoading, refetch } = useOtherRegistrationScores();
@@ -144,6 +145,8 @@ export default function OtherApplicationsPage() {
           accepted: { bg: "bg-green-100", text: "text-green-800", label: "Accepted" },
           rejected: { bg: "bg-red-100", text: "text-red-800", label: "Rejected" },
           waitlisted: { bg: "bg-blue-100", text: "text-blue-800", label: "Waitlisted" },
+          confirmed: { bg: "bg-green-100", text: "text-green-800", label: "Confirmed" },
+          declined: { bg: "bg-red-100", text: "text-red-800", label: "Declined" },
         };
         const config = statusConfig[statusValue] || { bg: "bg-zinc-100", text: "text-zinc-800", label: String(value) };
         return (
@@ -238,6 +241,8 @@ export default function OtherApplicationsPage() {
 
   return (
     <section className="space-y-4">
+      <StatusBreakdownBar data={applicationsRaw} />
+
       {/* Filter Controls */}
       <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-4 space-y-4">
         <h3 className="font-semibold text-zinc-900">Filters</h3>

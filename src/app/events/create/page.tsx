@@ -13,6 +13,7 @@ import { useCreateEvent } from "@/common/api/event/hook";
 export interface EventFormData {
   // Event type
   type: EventType | "";
+  fastPass: boolean;
   
   // Event details
   name: string;
@@ -33,6 +34,7 @@ export interface EventFormData {
 
 const INITIAL_FORM_DATA: EventFormData = {
   type: "",
+  fastPass: false,
   name: "",
   location: "",
   description: "",
@@ -84,6 +86,10 @@ export default function CreateEventPage() {
       formDataToSubmit.append("locationId", formData.location);
       formDataToSubmit.append("startTime", new Date(formData.startTime).getTime().toString());
       formDataToSubmit.append("endTime", new Date(formData.endTime).getTime().toString());
+      formDataToSubmit.append(
+        "fastPass",
+        (formData.type === EventType.food && formData.fastPass).toString(),
+      );
       
       // Workshop details (only if workshop type)
       if (formData.type === EventType.workshop) {

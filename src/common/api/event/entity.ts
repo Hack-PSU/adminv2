@@ -19,6 +19,7 @@ export interface EventEntity {
   wsSkillLevel?: string;
   wsUrls?: string[];
   hackathonId?: string;
+  fastPass: boolean;
 }
 
 export interface EventEntityResponse extends EventEntity {

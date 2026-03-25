@@ -4,13 +4,17 @@ import { useEffect, useMemo, useState } from "react";
 import { useAnalyticsSummary } from "@/common/api/analytics/hook";
 import { useAllHackathons } from "@/common/api/hackathon/hook";
 import { useAllRegistrations } from "@/common/api/registration/hook";
+import { useAllScans } from "@/common/api/scan/hook";
 import { useAllUsers } from "@/common/api/user/hook";
 import { useActiveHackathonForStatic } from "@/common/api/hackathon/hook";
+import { EventType, useAllEvents } from "@/common/api/event";
 import {
   ChartContainer,
+  CheckInHeatmap,
   Pie,
   RegistrationBarLine,
   RegistrationTimeline,
+  type CheckInHeatmapDatum,
   type PieDatum,
   type RegistrationBarDatum,
   type TimelineDataPoint,
@@ -21,6 +25,21 @@ const MAX_SCHOOL_SLICES = 8;
 const OTHER_SCHOOLS_LABEL = "Other schools";
 const MAX_MAJOR_SLICES = 8;
 const OTHER_MAJORS_LABEL = "Other majors";
+const CHECK_IN_BUCKET_OPTIONS = [
+  { value: "15", label: "15 min" },
+  { value: "30", label: "30 min" },
+  { value: "60", label: "1 hour" },
+];
+const CHECK_IN_TIME_FORMAT: Intl.DateTimeFormatOptions = {
+  hour: "numeric",
+  minute: "2-digit",
+};
+const CHECK_IN_DATE_TIME_FORMAT: Intl.DateTimeFormatOptions = {
+  month: "short",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+};
 
 function formatLabel(value?: string | null) {
   if (!value) {
@@ -30,7 +49,10 @@ function formatLabel(value?: string | null) {
   return trimmed.length ? trimmed : "Unknown";
 }
 
-function formatMissingLabel(value: string | null | undefined, missing: string[]) {
+function formatMissingLabel(
+  value: string | null | undefined,
+  missing: string[],
+) {
   const formatted = formatLabel(value);
   if (formatted === "Unknown") {
     return formatted;
@@ -54,6 +76,24 @@ function normalizeTimestamp(value: number | string | null | undefined) {
     return null;
   }
   return numeric < 1e12 ? numeric * 1000 : numeric;
+}
+
+function formatCheckInLabel(timestamp: number, includeDate = false) {
+  return new Date(timestamp).toLocaleString(
+    [],
+    includeDate ? CHECK_IN_DATE_TIME_FORMAT : CHECK_IN_TIME_FORMAT,
+  );
+}
+
+function formatCheckInRange(
+  startTimestamp: number,
+  endTimestamp: number,
+  includeDate = false,
+) {
+  return `${formatCheckInLabel(startTimestamp, includeDate)} - ${formatCheckInLabel(
+    endTimestamp,
+    includeDate,
+  )}`;
 }
 
 function buildPieData<T>(
@@ -122,29 +162,41 @@ export default function AnalyticsSummary() {
     isLoading: usersLoading,
     isError: usersError,
   } = useAllUsers();
+  const [selectedHackathonId, setSelectedHackathonId] = useState<string>("");
+  const [checkInBucketMinutes, setCheckInBucketMinutes] = useState("30");
   const {
-    data: activeHackathon,
-  } = useActiveHackathonForStatic();
+    data: scans = [],
+    isLoading: scansLoading,
+    isError: scansError,
+  } = useAllScans(selectedHackathonId || undefined);
+  const {
+    data: events = [],
+    isLoading: eventsLoading,
+    isError: eventsError,
+  } = useAllEvents(selectedHackathonId || undefined);
+  const { data: activeHackathon } = useActiveHackathonForStatic();
 
   const isLoading =
     summaryLoading ||
     hackathonsLoading ||
     registrationsLoading ||
-    usersLoading;
+    usersLoading ||
+    scansLoading ||
+    eventsLoading;
   const isError =
     summaryError ||
     hackathonsError ||
     registrationsError ||
-    usersError;
-
-  const [selectedHackathonId, setSelectedHackathonId] = useState<string>("");
+    usersError ||
+    scansError ||
+    eventsError;
 
   // Set selected hackathon to active hackathon when it loads
   useEffect(() => {
-    if (activeHackathon?.id) {
+    if (!selectedHackathonId && activeHackathon?.id) {
       setSelectedHackathonId(activeHackathon.id);
     }
-  }, [activeHackathon?.id]);
+  }, [activeHackathon?.id, selectedHackathonId]);
 
   const orderedHackathons = useMemo(() => {
     if (!hackathons.length) return [];
@@ -170,6 +222,22 @@ export default function AnalyticsSummary() {
     return users.filter((user) => registeredUserIds.has(user.id));
   }, [filteredRegistrations, users]);
 
+  const selectedHackathon = useMemo(() => {
+    if (!selectedHackathonId) {
+      return null;
+    }
+
+    return (
+      orderedHackathons.find(
+        (hackathon) => hackathon.id === selectedHackathonId,
+      ) ?? null
+    );
+  }, [orderedHackathons, selectedHackathonId]);
+
+  const selectedHackathonLabel = selectedHackathon
+    ? formatLabel(selectedHackathon.name)
+    : "All hackathons";
+
   const registrationsData = useMemo<RegistrationBarDatum[]>(() => {
     const registrationSummary = summary?.registrations ?? [];
     if (!registrationSummary.length) {
@@ -183,9 +251,7 @@ export default function AnalyticsSummary() {
       }));
     }
 
-    const byId = new Map(
-      registrationSummary.map((entry) => [entry.id, entry]),
-    );
+    const byId = new Map(registrationSummary.map((entry) => [entry.id, entry]));
     const knownIds = new Set<string>();
 
     const data: RegistrationBarDatum[] = [];
@@ -218,6 +284,92 @@ export default function AnalyticsSummary() {
     () => registrationsData.reduce((sum, entry) => sum + entry.count, 0),
     [registrationsData],
   );
+
+  const activeHackathonTotal = filteredRegistrations.length;
+
+  const checkInHeatmapData = useMemo(() => {
+    const checkInEventIds = new Set(
+      events
+        .filter((event) => event.type === EventType.checkIn)
+        .map((event) => event.id),
+    );
+
+    const checkInScans = scans.filter((scan) =>
+      checkInEventIds.has(scan.eventId),
+    );
+    const scanTimes = checkInScans
+      .map((scan) => normalizeTimestamp(scan.timestamp))
+      .filter((time): time is number => typeof time === "number")
+      .sort((a, b) => a - b);
+    const untimedCount = checkInScans.length - scanTimes.length;
+
+    if (!scanTimes.length) {
+      return {
+        totalCheckIns: checkInScans.length,
+        timestampedCheckIns: 0,
+        untimedCount,
+        firstCheckIn: "",
+        lastCheckIn: "",
+        peakRangeLabel: "",
+        peakCount: 0,
+        data: [] as CheckInHeatmapDatum[],
+      };
+    }
+
+    const bucketSizeMs = Number(checkInBucketMinutes) * 60 * 1000;
+    const earliestTime = scanTimes[0];
+    const latestTime = scanTimes[scanTimes.length - 1];
+    const bucketStart = Math.floor(earliestTime / bucketSizeMs) * bucketSizeMs;
+    const bucketEnd =
+      Math.floor(latestTime / bucketSizeMs) * bucketSizeMs + bucketSizeMs;
+    const spansMultipleDays =
+      new Set(scanTimes.map((time) => new Date(time).toDateString())).size > 1;
+
+    const bucketCounts = new Map<number, number>();
+    for (let cursor = bucketStart; cursor < bucketEnd; cursor += bucketSizeMs) {
+      bucketCounts.set(cursor, 0);
+    }
+
+    scanTimes.forEach((time) => {
+      const bucketKey = Math.floor(time / bucketSizeMs) * bucketSizeMs;
+      bucketCounts.set(bucketKey, (bucketCounts.get(bucketKey) ?? 0) + 1);
+    });
+
+    const rawData = Array.from(bucketCounts.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([bucket, count]) => ({
+        key: String(bucket),
+        label: formatCheckInLabel(bucket, spansMultipleDays),
+        rangeLabel: formatCheckInRange(
+          bucket,
+          bucket + bucketSizeMs,
+          spansMultipleDays,
+        ),
+        count,
+        intensity: 0,
+      }));
+
+    const peakCount = Math.max(...rawData.map((entry) => entry.count), 0);
+    const data = rawData.map((entry) => ({
+      ...entry,
+      intensity: peakCount > 0 ? entry.count / peakCount : 0,
+    }));
+    const peakBucket = data.find((entry) => entry.count === peakCount) ?? null;
+
+    return {
+      totalCheckIns: checkInScans.length,
+      timestampedCheckIns: scanTimes.length,
+      untimedCount,
+      firstCheckIn: formatCheckInLabel(scanTimes[0], spansMultipleDays),
+      lastCheckIn: formatCheckInLabel(
+        scanTimes[scanTimes.length - 1],
+        spansMultipleDays,
+      ),
+      peakRangeLabel: peakBucket?.rangeLabel ?? "",
+      peakCount,
+      data,
+    };
+  }, [events, scans, checkInBucketMinutes]);
 
   const registrationTimeline = useMemo<TimelineDataPoint[]>(() => {
     if (!allRegistrations.length || !hackathons.length) {
@@ -293,14 +445,13 @@ export default function AnalyticsSummary() {
   }, [filteredUsers]);
 
   const raceData = useMemo<PieDatum[]>(() => {
-    if (!filteredUsers.length) return [];
-    const counts: Record<string, number> = {};
-    filteredUsers.forEach((user) => {
-      const label = formatMissingLabel(user.race, ["null"]);
-      counts[label] = (counts[label] ?? 0) + 1;
-    });
-    return Object.entries(counts).map(([label, value]) => ({ label, value }));
-  }, [filteredUsers]);
+    const races = summary?.race ?? [];
+    return buildPieData(
+      races,
+      (item) => formatLabel(item.race),
+      (item) => item.count,
+    );
+  }, [summary?.race]);
 
   const academicYearData = useMemo<PieDatum[]>(() => {
     if (!filteredRegistrations.length) return [];
@@ -371,6 +522,15 @@ export default function AnalyticsSummary() {
     }));
   }, [filteredRegistrations]);
 
+  const allergyData = useMemo<PieDatum[]>(() => {
+    const allergies = summary?.allergens ?? [];
+    return buildPieData(
+      allergies,
+      (item) => formatLabel(item.allergen),
+      (item) => item.count,
+    );
+  }, [summary?.allergens]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12 text-zinc-500">
@@ -397,9 +557,11 @@ export default function AnalyticsSummary() {
           <div className="w-full space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <p className="text-sm text-zinc-500">Total registrations</p>
+                <p className="text-sm text-zinc-500">
+                  {selectedHackathonLabel} registrations
+                </p>
                 <p className="text-3xl font-semibold text-zinc-900">
-                  {registrationTotal.toLocaleString()}
+                  {activeHackathonTotal.toLocaleString()}
                 </p>
               </div>
               <p className="text-xs text-zinc-400">
@@ -418,6 +580,116 @@ export default function AnalyticsSummary() {
         description="Cumulative registrations by day leading to each event."
       >
         <RegistrationTimeline data={registrationTimeline} />
+      </ChartContainer>
+
+      <ChartContainer
+        title="Check-In Heatmap"
+        description="Histogram of check-in volume by time interval for the selected hackathon."
+      >
+        <div className="w-full space-y-4">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-sm text-zinc-500">
+                {selectedHackathonLabel} check-ins
+              </p>
+              <p className="text-3xl font-semibold text-zinc-900">
+                {checkInHeatmapData.totalCheckIns.toLocaleString()}
+              </p>
+              <p className="text-xs text-zinc-400">
+                {checkInHeatmapData.timestampedCheckIns.toLocaleString()}{" "}
+                timestamped
+                {checkInHeatmapData.untimedCount > 0
+                  ? ` · ${checkInHeatmapData.untimedCount.toLocaleString()} missing timestamps`
+                  : ""}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <label
+                  htmlFor="checkin-hackathon-filter"
+                  className="text-sm font-medium text-zinc-600"
+                >
+                  Hackathon
+                </label>
+                <select
+                  id="checkin-hackathon-filter"
+                  value={selectedHackathonId}
+                  onChange={(e) => setSelectedHackathonId(e.target.value)}
+                  className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+                >
+                  {orderedHackathons.map((hackathon) => (
+                    <option key={hackathon.id} value={hackathon.id}>
+                      {formatLabel(hackathon.name)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <label
+                  htmlFor="checkin-interval"
+                  className="text-sm font-medium text-zinc-600"
+                >
+                  Interval
+                </label>
+                <select
+                  id="checkin-interval"
+                  value={checkInBucketMinutes}
+                  onChange={(e) => setCheckInBucketMinutes(e.target.value)}
+                  className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+                >
+                  {CHECK_IN_BUCKET_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {checkInHeatmapData.data.length ? (
+            <div className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+                  <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                    Scan window
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-zinc-900">
+                    {checkInHeatmapData.firstCheckIn} to{" "}
+                    {checkInHeatmapData.lastCheckIn}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+                  <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                    Peak interval
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-zinc-900">
+                    {checkInHeatmapData.peakRangeLabel}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+                  <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                    Peak volume
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-zinc-900">
+                    {checkInHeatmapData.peakCount.toLocaleString()} check-ins
+                  </p>
+                </div>
+              </div>
+              <CheckInHeatmap data={checkInHeatmapData.data} />
+            </div>
+          ) : (
+            <EmptyState
+              message={
+                checkInHeatmapData.totalCheckIns > 0
+                  ? "Check-in scans exist, but none include timestamps yet."
+                  : "No check-in activity found for the selected hackathon."
+              }
+            />
+          )}
+        </div>
       </ChartContainer>
 
       <div className="space-y-4">
@@ -447,86 +719,96 @@ export default function AnalyticsSummary() {
           </div>
         </div>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        <ChartContainer
-          title="Gender"
-          description="Self-reported gender distribution."
-        >
-          {genderData.length ? (
-            <Pie data={genderData} />
-          ) : (
-            <EmptyState message="No breakdown data yet." />
-          )}
-        </ChartContainer>
-        <ChartContainer
-          title="Race/Ethnicity"
-          description="Self-reported race breakdown."
-        >
-          {raceData.length ? (
-            <Pie data={raceData} />
-          ) : (
-            <EmptyState message="No breakdown data yet." />
-          )}
-        </ChartContainer>
-        <ChartContainer
-          title="Academic Year"
-          description="Student year distribution."
-        >
-          {academicYearData.length ? (
-            <Pie data={academicYearData} />
-          ) : (
-            <EmptyState message="No breakdown data yet." />
-          )}
-        </ChartContainer>
-        <ChartContainer
-          title="Coding Experience"
-          description="Experience level by applicants."
-        >
-          {codingExperienceData.length ? (
-            <Pie data={codingExperienceData} />
-          ) : (
-            <EmptyState message="No breakdown data yet." />
-          )}
-        </ChartContainer>
-        <ChartContainer
-          title="Shirt Size Distribution"
-          description="Shirt size requests by selected hackathon(s)."
-        >
-          {shirtSizeData.length ? (
-            <Pie data={shirtSizeData} />
-          ) : (
-            <EmptyState message="No shirt size data yet." />
-          )}
-        </ChartContainer>
-        <ChartContainer
-          title="Participant Schools"
-          description="Universities represented in selected hackathon(s)."
-        >
-          {schoolData.length ? (
-            <Pie data={schoolData} />
-          ) : (
-            <EmptyState message="No school data yet." />
-          )}
-        </ChartContainer>
-        <ChartContainer
-          title="College Majors"
-          description="Participants by major in selected hackathon(s)."
-        >
-          {majorData.length ? (
-            <Pie data={majorData} />
-          ) : (
-            <EmptyState message="No major data yet." />
-          )}
-        </ChartContainer>
-        <ChartContainer
-          title="Travel Reimbursement Requests"
-          description="Share of hackers requesting travel support."
-        >
-          {travelReimbursementData.length ? (
-            <Pie data={travelReimbursementData} />
-          ) : (
-            <EmptyState message="No reimbursement data yet." />
-          )}
-        </ChartContainer>
+          <ChartContainer
+            title="Gender"
+            description="Self-reported gender distribution."
+          >
+            {genderData.length ? (
+              <Pie data={genderData} />
+            ) : (
+              <EmptyState message="No breakdown data yet." />
+            )}
+          </ChartContainer>
+          <ChartContainer
+            title="Race/Ethnicity"
+            description="Self-reported race breakdown."
+          >
+            {raceData.length ? (
+              <Pie data={raceData} />
+            ) : (
+              <EmptyState message="No breakdown data yet." />
+            )}
+          </ChartContainer>
+          <ChartContainer
+            title="Academic Year"
+            description="Student year distribution."
+          >
+            {academicYearData.length ? (
+              <Pie data={academicYearData} />
+            ) : (
+              <EmptyState message="No breakdown data yet." />
+            )}
+          </ChartContainer>
+          <ChartContainer
+            title="Coding Experience"
+            description="Experience level by applicants."
+          >
+            {codingExperienceData.length ? (
+              <Pie data={codingExperienceData} />
+            ) : (
+              <EmptyState message="No breakdown data yet." />
+            )}
+          </ChartContainer>
+          <ChartContainer
+            title="Shirt Size Distribution"
+            description="Shirt size requests by selected hackathon(s)."
+          >
+            {shirtSizeData.length ? (
+              <Pie data={shirtSizeData} />
+            ) : (
+              <EmptyState message="No shirt size data yet." />
+            )}
+          </ChartContainer>
+          <ChartContainer
+            title="Participant Schools"
+            description="Universities represented in selected hackathon(s)."
+          >
+            {schoolData.length ? (
+              <Pie data={schoolData} />
+            ) : (
+              <EmptyState message="No school data yet." />
+            )}
+          </ChartContainer>
+          <ChartContainer
+            title="College Majors"
+            description="Participants by major in selected hackathon(s)."
+          >
+            {majorData.length ? (
+              <Pie data={majorData} />
+            ) : (
+              <EmptyState message="No major data yet." />
+            )}
+          </ChartContainer>
+          <ChartContainer
+            title="Travel Reimbursement Requests"
+            description="Share of hackers requesting travel support."
+          >
+            {travelReimbursementData.length ? (
+              <Pie data={travelReimbursementData} />
+            ) : (
+              <EmptyState message="No reimbursement data yet." />
+            )}
+          </ChartContainer>
+          <ChartContainer
+            title="Allergies"
+            description="Allergen breakdown for selected hackathon."
+          >
+            {allergyData.length ? (
+              <Pie data={allergyData} />
+            ) : (
+              <EmptyState message="No allergy data yet." />
+            )}
+          </ChartContainer>
         </div>
       </div>
     </div>
