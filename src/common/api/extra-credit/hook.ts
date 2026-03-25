@@ -7,6 +7,7 @@ import {
   replaceExtraCreditClass,
   deleteExtraCreditClass,
   getAllExtraCreditAssignments,
+  getExtraCreditClassList,
 } from "./provider";
 import {
   ExtraCreditClassEntity,
@@ -15,6 +16,15 @@ import {
   ECClassPatchEntity,
   ExtraCreditAssignmentEntity,
 } from "./entity";
+
+
+export function useExtraCreditClassList(classId: number) {
+  return useQuery({
+    queryKey: ["extra-credit", "classes", "list", classId] as const,
+    queryFn: () => getExtraCreditClassList(classId),
+    enabled: false, // only runs when manually triggered
+  });
+}
 
 export const extraCreditQueryKeys = {
   allClasses: ["extra-credit", "classes"] as const,
@@ -100,3 +110,5 @@ export function useAllExtraCreditAssignments() {
     queryFn: getAllExtraCreditAssignments,
   });
 }
+
+

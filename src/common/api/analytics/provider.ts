@@ -3,6 +3,7 @@ import {
   AnalyticsSummaryResponse,
   AnalyticsEventsResponse,
   AnalyticsScansResponse,
+  AnalyticsApplicationsResponse,
 } from "./entity";
 
 export async function getAnalyticsSummary(): Promise<AnalyticsSummaryResponse> {
@@ -19,6 +20,12 @@ export async function getEventsAnalytics(): Promise<AnalyticsEventsResponse[]> {
 
 export async function getOrganizerScans(): Promise<AnalyticsScansResponse[]> {
   return apiFetch<AnalyticsScansResponse[]>("/analytics/scans", {
+    method: "GET",
+  });
+}
+
+export async function getApplicationsAnalytics(): Promise<AnalyticsApplicationsResponse> {
+  return apiFetch<AnalyticsApplicationsResponse>("/analytics/applications", {
     method: "GET",
   });
 }

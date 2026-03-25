@@ -7,11 +7,13 @@ import {
   useAllExtraCreditAssignments,
   useCreateExtraCreditClass,
   useDeleteExtraCreditClass,
+
 } from "@/common/api/extra-credit/hook";
 import { ExtraCreditClassEntity } from "@/common/api/extra-credit/entity";
-import { Plus } from "lucide-react";
+import { Plus, Download } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { getExtraCreditClassList } from "@/common/api/extra-credit/provider";
 
 // Extended entity with hacker count
 interface ExtraCreditClassWithCount extends ExtraCreditClassEntity {
@@ -44,9 +46,49 @@ export default function ManageClassesPage() {
     });
   }, [classes, assignments]);
 
+  const handleExport = async (classId: number) => {
+    try {
+      const data = await getExtraCreditClassList(classId);
+
+      const names: string[] = data?.names ?? [];
+
+      // CSV content (escape quotes just in case)
+      const csvLines = ["Name", ...names.map((n) => `"${String(n).replaceAll('"', '""')}"`)];
+      const csv = csvLines.join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `class-${classId}-students.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      URL.revokeObjectURL(url);
+
+      toast.success(`Exported ${names.length} student(s).`);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to export class list.");
+    }
+  };
+
   const columns: DataTableColumn<ExtraCreditClassWithCount>[] = [
     { accessorKey: "name", header: "Class Name" },
     { accessorKey: "hackers", header: "Hackers" },
+    {
+      accessorKey: "actions" as any,
+      header: "Actions",
+      cell: (_value, row) => (
+      <button onClick={() => handleExport(row.id)}
+        className="p-2 text-black-600 hover:bg-gray-200 rounded-md transition-colors"
+        title="Export class list">
+          <Download className="h-4 w-4"/>
+      </button>
+  ),
+    },
   ];
 
   const handleAddClass = async (event: FormEvent) => {

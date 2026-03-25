@@ -10,6 +10,7 @@ export default function AnalyticsLayout({ children }: AnalyticsLayoutProps) {
     { label: "Applications", href: "/analytics/applications" },
     { label: "Events", href: "/analytics/events" },
     { label: "Organizers", href: "/analytics/organizers" },
+  
   ];
 
   return (

@@ -23,6 +23,12 @@ export async function getExtraCreditClass(
   });
 }
 
+export async function getExtraCreditClassList(classId: number): Promise<any> {
+  return apiFetch(`/extra-credit/classes/list/${classId}`, {
+    method: "GET",
+  });
+}
+
 export async function createExtraCreditClass(
   data: ECClassCreateEntity,
 ): Promise<ExtraCreditClassEntity> {
@@ -63,3 +69,4 @@ export async function getAllExtraCreditAssignments(): Promise<
     method: "GET",
   });
 }
+
