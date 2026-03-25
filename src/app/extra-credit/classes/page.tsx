@@ -10,7 +10,7 @@ import {
 
 } from "@/common/api/extra-credit/hook";
 import { ExtraCreditClassEntity } from "@/common/api/extra-credit/entity";
-import { Plus } from "lucide-react";
+import { Plus, Download } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { getExtraCreditClassList } from "@/common/api/extra-credit/provider";
@@ -82,9 +82,11 @@ export default function ManageClassesPage() {
       accessorKey: "actions" as any,
       header: "Actions",
       cell: (_value, row) => (
-      <Button onClick={() => handleExport(row.id)} variant="outline">
-        Export
-      </Button>
+      <button onClick={() => handleExport(row.id)}
+        className="p-2 text-black-600 hover:bg-gray-200 rounded-md transition-colors"
+        title="Export class list">
+          <Download className="h-4 w-4"/>
+      </button>
   ),
     },
   ];

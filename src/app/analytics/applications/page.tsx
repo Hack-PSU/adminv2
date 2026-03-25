@@ -1,6 +1,13 @@
 "use client";
 
 import { useApplicationsAnalytics } from "@/common/api/analytics/hook";
+import {
+  UserCheck,
+  CheckCircle,
+  Clock,
+  Award,
+  TrendingUp,
+} from "lucide-react";
 
 // const mockApplicationsData = {
 //   pennState: {
@@ -31,14 +38,19 @@ function MetricCard({
   title,
   value,
   description,
+  icon: Icon,
 }: {
   title: string;
   value: string | number;
   description?: string;
+  icon?: React.ComponentType<{ className?: string }>;
 }) {
   return (
     <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-      <h3 className="text-sm font-medium text-zinc-500">{title}</h3>
+      <div className="flex items-center gap-2">
+        {Icon && <Icon className="h-5 w-5 text-zinc-600" />}
+        <h3 className="text-sm font-medium text-zinc-500">{title}</h3>
+      </div>
       <p className="mt-3 text-3xl font-semibold text-zinc-900">{value}</p>
       {description ? (
         <p className="mt-2 text-sm text-zinc-500">{description}</p>
@@ -67,22 +79,27 @@ function MetricsSection({
         <MetricCard
           title="Attendance Rate"
           value={formatPercent(data.attendanceRate)}
+          icon={UserCheck}
         />
         <MetricCard
           title="Confirm Rate"
           value={formatPercent(data.confirmRate)}
+          icon={CheckCircle}
         />
         <MetricCard
           title="Average Confirm Time"
           value={formatDays(data.averageConfirmTime)}
+          icon={Clock}
         />
         <MetricCard
           title="Acceptance Total"
           value={data.acceptanceTotal.toLocaleString()}
+          icon={Award}
         />
         <MetricCard
           title="Acceptance Rate"
           value={formatPercent(data.acceptanceRate)}
+          icon={TrendingUp}
         />
       </div>
     </section>
