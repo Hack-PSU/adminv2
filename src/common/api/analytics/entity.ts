@@ -44,3 +44,16 @@ export interface AnalyticsEventsResponse {
   name: string;
   count: number;
 }
+
+export interface ApplicationMetricsGroup {
+  attendanceRate: number;
+  confirmRate: number;
+  averageConfirmTime: number;
+  acceptanceTotal: number;
+  acceptanceRate: number;
+}
+
+export interface AnalyticsApplicationsResponse {
+  pennState: ApplicationMetricsGroup;
+  other: ApplicationMetricsGroup;
+}
