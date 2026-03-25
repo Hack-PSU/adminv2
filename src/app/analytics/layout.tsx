@@ -7,9 +7,11 @@ type AnalyticsLayoutProps = {
 export default function AnalyticsLayout({ children }: AnalyticsLayoutProps) {
   const navItems = [
     { label: "Summary", href: "/analytics/summary" },
+    { label: "Applications", href: "/analytics/applications" },
     { label: "Attendance", href: "/analytics/attendance" },
     { label: "Events", href: "/analytics/events" },
     { label: "Organizers", href: "/analytics/organizers" },
+  
   ];
 
   return (
