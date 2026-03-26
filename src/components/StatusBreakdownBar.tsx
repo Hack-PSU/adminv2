@@ -34,15 +34,10 @@ export default function StatusBreakdownBar({ data }: StatusBreakdownBarProps) {
   const total = data.length;
 
   return (
-    <div className="bg-white border border-zinc-200 rounded-lg p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-zinc-900">Application Status Overview</h3>
-        <span className="text-sm font-medium text-zinc-500">{total} total</span>
-      </div>
-
+    <div className="flex items-center gap-3 flex-1 min-w-0">
       {/* Segmented bar */}
       {total > 0 && (
-        <div className="flex h-3 rounded-full overflow-hidden bg-zinc-100">
+        <div className="flex h-2.5 rounded-full overflow-hidden bg-zinc-100 w-48 shrink-0">
           {STATUS_CONFIG.map((status) => {
             const count = statusCounts[status.key];
             if (count === 0) return null;
@@ -59,19 +54,20 @@ export default function StatusBreakdownBar({ data }: StatusBreakdownBarProps) {
         </div>
       )}
 
-      {/* Legend with counts */}
-      <div className="flex flex-wrap gap-3">
+      {/* Status pills */}
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="text-xs font-medium text-zinc-500 mr-1">{total} total</span>
         {STATUS_CONFIG.map((status) => {
           const count = statusCounts[status.key];
+          if (count === 0) return null;
           return (
-            <div
+            <span
               key={status.key}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${status.pill} ${status.text}`}
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${status.pill} ${status.text}`}
             >
-              <span className={`inline-block w-2 h-2 rounded-full ${status.bg}`} />
-              {status.label}
-              <span className="font-semibold">{count}</span>
-            </div>
+              <span className={`inline-block w-1.5 h-1.5 rounded-full ${status.bg}`} />
+              {status.label} {count}
+            </span>
           );
         })}
       </div>
