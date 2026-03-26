@@ -89,6 +89,8 @@ export default function FlagsSettingsPage() {
     <DataTable
       data={flags}
       columns={columns}
+      idField="name"
+      enableRowSelection={false}
       onSave={handleSave}
       onRefresh={async () => {
           await refetch();

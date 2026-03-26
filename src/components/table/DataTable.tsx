@@ -394,6 +394,7 @@ export function DataTable<TData extends Record<string, any>>({
         pageSize,
       },
     },
+    autoResetPageIndex: false,
     manualPagination: false,
   });
 
