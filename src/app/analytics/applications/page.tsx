@@ -72,6 +72,12 @@ function MetricsSection({
     acceptanceRate: number;
   };
 }) {
+  const totalApplications = data.acceptanceRate > 0
+    ? Math.round(data.acceptanceTotal / data.acceptanceRate)
+    : 0;
+  const confirmedCount = Math.round(data.confirmRate * data.acceptanceTotal);
+  const checkedInCount = Math.round(data.attendanceRate * confirmedCount);
+
   return (
     <section className="space-y-4">
       <h2 className="text-xl font-semibold text-zinc-900">{title}</h2>
@@ -79,11 +85,13 @@ function MetricsSection({
         <MetricCard
           title="Attendance Rate"
           value={formatPercent(data.attendanceRate)}
+          description={checkedInCount.toLocaleString() + " people checked in"}
           icon={UserCheck}
         />
         <MetricCard
           title="Confirm Rate"
           value={formatPercent(data.confirmRate)}
+          description={confirmedCount.toLocaleString() + " people confirmed"}
           icon={CheckCircle}
         />
         <MetricCard
@@ -94,11 +102,13 @@ function MetricsSection({
         <MetricCard
           title="Acceptance Total"
           value={data.acceptanceTotal.toLocaleString()}
+          description={formatPercent(data.acceptanceRate) + " acceptance rate"}
           icon={Award}
         />
         <MetricCard
           title="Acceptance Rate"
           value={formatPercent(data.acceptanceRate)}
+          description={data.acceptanceTotal.toLocaleString() + " out of " + totalApplications.toLocaleString() + " applicants"}
           icon={TrendingUp}
         />
       </div>

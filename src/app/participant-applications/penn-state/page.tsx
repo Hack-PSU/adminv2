@@ -7,7 +7,6 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ViewParticipantApplicationModal from "@/components/modal/ViewParticipantApplicationModal";
-import StatusBreakdownBar from "@/components/StatusBreakdownBar";
 
 export default function PennStateApplicationsPage() {
   const { data: applicationsRaw = [], isLoading, refetch } = usePennStateRegistrationScores();
@@ -235,8 +234,6 @@ export default function PennStateApplicationsPage() {
 
   return (
     <section className="space-y-4">
-      <StatusBreakdownBar data={applicationsRaw} />
-
       {/* Filter Controls */}
       <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-4 space-y-4">
         <h3 className="font-semibold text-zinc-900">Filters</h3>
