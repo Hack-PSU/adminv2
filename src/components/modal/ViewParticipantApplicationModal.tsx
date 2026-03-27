@@ -25,6 +25,7 @@ export default function ViewParticipantApplicationModal({
   if (!application) return null;
 
   const isPending = application.applicationStatus === "pending";
+  const isRejectedOrDeclined = ["rejected", "declined"].includes(application.applicationStatus);
 
   const handleAccept = async () => {
     setIsAcceptLoading(true);
@@ -192,10 +193,10 @@ export default function ViewParticipantApplicationModal({
         </section>
 
         {/* Status Info */}
-        {!isPending && (
+        {!isPending && !isRejectedOrDeclined && (
           <div className="mb-4 rounded-lg bg-yellow-50 border border-yellow-200 p-3">
             <p className="text-sm text-yellow-800">
-              This application cannot be updated because its status is <span className="font-semibold">{application.applicationStatus}</span>. Only pending applications can be updated.
+              This application cannot be updated because its status is <span className="font-semibold">{application.applicationStatus}</span>. Only pending, rejected, or declined applications can be updated.
             </p>
           </div>
         )}
@@ -212,7 +213,7 @@ export default function ViewParticipantApplicationModal({
             <Button
               onClick={handleWaitlist}
               disabled={isWaitlistLoading || !isPending}
-              title={!isPending ? "Can only update pending applications" : ""}
+              title={!isPending ? "Can only waitlist pending applications" : ""}
               className="bg-yellow-500 hover:bg-yellow-600 text-white disabled:bg-zinc-300 disabled:cursor-not-allowed"
             >
               {isWaitlistLoading ? "Waitlisting..." : "Waitlist"}
@@ -221,15 +222,15 @@ export default function ViewParticipantApplicationModal({
           <Button
             onClick={handleReject}
             disabled={isRejectLoading || !isPending}
-            title={!isPending ? "Can only update pending applications" : ""}
+            title={!isPending ? "Can only reject pending applications" : ""}
             className="bg-red-500 hover:bg-red-600 text-white disabled:bg-zinc-300 disabled:cursor-not-allowed"
           >
             {isRejectLoading ? "Rejecting..." : "Reject"}
           </Button>
           <Button
             onClick={handleAccept}
-            disabled={isAcceptLoading || !isPending}
-            title={!isPending ? "Can only update pending applications" : ""}
+            disabled={isAcceptLoading || !(isPending || isRejectedOrDeclined)}
+            title={!(isPending || isRejectedOrDeclined) ? "Can only accept pending, rejected, or declined applications" : ""}
             className="bg-green-500 hover:bg-green-600 text-white disabled:bg-zinc-300 disabled:cursor-not-allowed"
           >
             {isAcceptLoading ? "Accepting..." : "Accept"}
