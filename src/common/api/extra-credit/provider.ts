@@ -5,6 +5,7 @@ import {
   ExtraCreditClassEntity,
   ECClassCreateEntity,
   ECClassPatchEntity,
+  ECClassQualifiedUsers,
 } from "./entity";
 
 export async function getAllExtraCreditClasses(): Promise<
@@ -23,8 +24,8 @@ export async function getExtraCreditClass(
   });
 }
 
-export async function getExtraCreditClassList(classId: number): Promise<any> {
-  return apiFetch(`/extra-credit/classes/list/${classId}`, {
+export async function getExtraCreditClassList(classId: number): Promise<ECClassQualifiedUsers> {
+  return apiFetch<ECClassQualifiedUsers>(`/extra-credit/classes/list/${classId}`, {
     method: "GET",
   });
 }

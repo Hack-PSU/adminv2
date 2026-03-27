@@ -48,9 +48,8 @@ export default function ManageClassesPage() {
 
   const handleExport = async (classId: number) => {
     try {
-      const data = await getExtraCreditClassList(classId);
-
-      const names: string[] = data?.names ?? [];
+      const result = await getExtraCreditClassList(classId);
+      const names: string[] = result.names ?? [];
 
       // CSV content (escape quotes just in case)
       const csvLines = ["Name", ...names.map((n) => `"${String(n).replaceAll('"', '""')}"`)];

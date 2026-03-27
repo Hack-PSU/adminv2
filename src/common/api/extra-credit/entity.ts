@@ -24,4 +24,8 @@ export interface ECClassCreateEntity {
   hackathonId?: string;
 }
 
+export interface ECClassQualifiedUsers {
+  names: string[];
+}
+
 export type ECClassPatchEntity = Partial<ECClassCreateEntity>;
