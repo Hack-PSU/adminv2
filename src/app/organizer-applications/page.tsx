@@ -6,15 +6,43 @@ import {
   useAcceptApplication,
   useRejectApplication,
 } from "@/common/api/organizer_applications";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Eye, Check, X } from "lucide-react";
 import { OrganizerApplicationEntity, OrganizerTeam, ApplicationStatus } from "@/common/api/organizer_applications";
 import ViewApplicationModal from "@/components/modal/ViewApplicationModal";
+import { useAllHackathons } from "@/common/api/hackathon/hook";
+
+// Hackathon start/end times can be stored in seconds or milliseconds; normalize to ms.
+function normalizeTimestamp(value: number | string | null | undefined) {
+  if (value == null) return null;
+  const numeric = typeof value === "string" ? Number(value) : value;
+  if (!Number.isFinite(numeric)) return null;
+  return numeric < 1e12 ? numeric * 1000 : numeric;
+}
 
 export default function OrganizerApplicationsPage() {
   const {data: applications = [], isLoading, refetch } = useAllApplications();
+  const { data: hackathons = [] } = useAllHackathons();
   const acceptApplicationMutation = useAcceptApplication();
   const rejectApplicationMutation = useRejectApplication();
+
+  const lastHackathonEndTime = useMemo(() => {
+    // The active hackathon is the upcoming/current one; the "last" hackathon
+    // is the most recent one that has already concluded.
+    const endedHackathons = hackathons
+      .filter((h) => !h.active)
+      .map((h) => normalizeTimestamp(h.endTime))
+      .filter((end): end is number => end !== null);
+    if (endedHackathons.length === 0) return null;
+    return Math.max(...endedHackathons);
+  }, [hackathons]);
+
+  const visibleApplications = useMemo(() => {
+    if (lastHackathonEndTime === null) return applications;
+    return applications.filter(
+      (app) => new Date(app.createdAt).getTime() > lastHackathonEndTime,
+    );
+  }, [applications, lastHackathonEndTime]);
   const [selectedApplication, setSelectedApplication] = useState<OrganizerApplicationEntity | null>(null);
   const [acceptModalData, setAcceptModalData] = useState<{
     id: number;
@@ -188,7 +216,7 @@ export default function OrganizerApplicationsPage() {
         </h1>
       </header>
       <DataTable<OrganizerApplicationEntity>
-        data={applications}
+        data={visibleApplications}
         columns={columns}
         onRefresh={handleRefresh}
         idField="id"
