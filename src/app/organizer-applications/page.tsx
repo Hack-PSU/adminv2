@@ -20,6 +20,12 @@ function normalizeTimestamp(value: number | string | null | undefined) {
   return numeric < 1e12 ? numeric * 1000 : numeric;
 }
 
+function statusColorClass(status: ApplicationStatus) {
+  if (status === ApplicationStatus.ACCEPTED) return "text-green-600";
+  if (status === ApplicationStatus.REJECTED) return "text-red-600";
+  return "text-zinc-900";
+}
+
 export default function OrganizerApplicationsPage() {
   const {data: applications = [], isLoading, refetch } = useAllApplications();
   const { data: hackathons = [] } = useAllHackathons();
@@ -75,23 +81,21 @@ export default function OrganizerApplicationsPage() {
     },
     {
       accessorKey: "firstChoiceTeam",
-      header: "First Choice Team",
-    },
-    {
-      accessorKey: "firstChoiceStatus",
-      header: "First Choice Status",
+      header: "First Choice",
+      cell: (_, row) => (
+        <span className={statusColorClass(row.firstChoiceStatus)}>
+          {row.firstChoiceTeam}
+        </span>
+      ),
     },
     {
       accessorKey: "secondChoiceTeam",
-      header: "Second Choice Team",
-    },
-    {
-      accessorKey: "secondChoiceStatus",
-      header: "Second Choice Status",
-    },
-    {
-      accessorKey: "assignedTeam",
-      header: "Assigned Team",
+      header: "Second Choice",
+      cell: (_, row) => (
+        <span className={statusColorClass(row.secondChoiceStatus)}>
+          {row.secondChoiceTeam}
+        </span>
+      ),
     },
     {
       accessorKey: "createdAt",
