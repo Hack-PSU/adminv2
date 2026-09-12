@@ -1,14 +1,17 @@
 "use client";
+import {
+  useRegistrationGetOtherRegistrationsWithScores,
+  useRegistrationGetPennStateRegistrationsWithScores,
+} from "@hackpsu/react-sdk";
 import React from "react";
 import { usePathname } from "next/navigation";
 import SubNavigation from "@/components/layout/SubNavigation";
 import StatusBreakdownBar from "@/components/StatusBreakdownBar";
-import { usePennStateRegistrationScores, useOtherRegistrationScores } from "@/common/api/registration/hook";
 
 export default function ParticipantApplicationsLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { data: psuData = [] } = usePennStateRegistrationScores();
-  const { data: otherData = [] } = useOtherRegistrationScores();
+  const { data: psuData = [] } = useRegistrationGetPennStateRegistrationsWithScores();
+  const { data: otherData = [] } = useRegistrationGetOtherRegistrationsWithScores();
 
   const isOther = pathname.includes("/other");
   const activeData = isOther ? otherData : psuData;

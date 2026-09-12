@@ -1,12 +1,15 @@
 "use client";
 
+import {
+  FlagEntity,
+  useFlagGetAll,
+  useFlagPatchFlags,
+} from "@hackpsu/react-sdk";
 import { DataTable, DataTableColumn } from "@/components/table";
-import { useAllFlags, usePatchFlags } from "@/common/api/flag/hook";
-import { FlagEntity } from "@/common/api/flag/entity";
 
 export default function FlagsSettingsPage() {
-  const { data: flags = [], refetch } = useAllFlags();
-  const patchFlags = usePatchFlags();
+  const { data: flags = [], refetch } = useFlagGetAll();
+  const patchFlags = useFlagPatchFlags();
 
   const columns: DataTableColumn<FlagEntity>[] = [
     {
@@ -73,13 +76,16 @@ export default function FlagsSettingsPage() {
 
   const handleSave = async (updated: FlagEntity[]) => {
     await patchFlags.mutateAsync({
-      flags: updated.map((f) => ({
-        name: f.name,
-        isEnabled:
-          typeof f.isEnabled === "string"
-            ? f.isEnabled === "true"
-            : f.isEnabled,
-      })),
+      data: {
+        flags: updated.map((f) => ({
+          name: f.name,
+          description: f.description,
+          isEnabled:
+            typeof f.isEnabled === "string"
+              ? f.isEnabled === "true"
+              : f.isEnabled,
+        })),
+      },
     });
 
     await refetch();

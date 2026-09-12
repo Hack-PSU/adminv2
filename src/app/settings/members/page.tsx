@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
 import {
   OrganizerEntity,
   Role,
-  useAllOrganizers,
-  useUpdateOrganizer,
-  useDeleteOrganizer,
-  useCreateOrganizer,
-} from "@/common/api/organizer";
+  useOrganizerCreateOne,
+  useOrganizerDeleteOne,
+  useOrganizerGetAll,
+  useOrganizerPatchOne,
+} from "@hackpsu/react-sdk";
+import React, { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Search, Trash2, Plus, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -86,12 +86,12 @@ function groupBy<T>(arr: T[], keyFn: (item: T) => string) {
 }
 
 export default function MembersSettingsPage() {
-  const { data, refetch, isFetching } = useAllOrganizers();
+  const { data, refetch, isFetching } = useOrganizerGetAll();
   const organizers = data ?? []; 
 
-  const updateOrganizer = useUpdateOrganizer();
-  const deleteOrganizer = useDeleteOrganizer();
-  const createOrganizer = useCreateOrganizer();
+  const updateOrganizer = useOrganizerPatchOne();
+  const deleteOrganizer = useOrganizerDeleteOne();
+  const createOrganizer = useOrganizerCreateOne();
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [newEmail, setNewEmail] = useState("");
@@ -199,7 +199,7 @@ const grouped = useMemo(() => {
     setIsWorking(true);
     try {
       for (const id of selected) {
-        await deleteOrganizer.mutateAsync(id);
+        await deleteOrganizer.mutateAsync({ id: id });
       }
       await refetch();
       setSelected(new Set());
@@ -230,13 +230,13 @@ const grouped = useMemo(() => {
 
     setIsWorking(true);
     try {
-      await createOrganizer.mutateAsync({
+      await createOrganizer.mutateAsync({ data: {
         email: newEmail,
         firstName: newFirstName,
         lastName: newLastName,
         team: newTeam,
         privilege: Role.TEAM,
-      });
+      } });
       closeModal();
       await refetch();
     } finally {

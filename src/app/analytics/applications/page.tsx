@@ -1,6 +1,8 @@
 "use client";
 
-import { useApplicationsAnalytics } from "@/common/api/analytics/hook";
+import {
+  useAnalyticsGetApplicationAnalytics,
+} from "@hackpsu/react-sdk";
 import {
   UserCheck,
   CheckCircle,
@@ -117,7 +119,7 @@ function MetricsSection({
 }
 
 export default function ApplicationsAnalyticsPage() {
-  const { data, isLoading, isError } = useApplicationsAnalytics();
+  const { data, isLoading, isError } = useAnalyticsGetApplicationAnalytics();
   
 
   if (isLoading) {

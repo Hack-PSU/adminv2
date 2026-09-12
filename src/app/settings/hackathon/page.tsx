@@ -1,22 +1,22 @@
 "use client";
 
+import {
+  HackathonEntity,
+  useHackathonCreateOne,
+  useHackathonGetAll,
+  useHackathonMarkActive,
+  useHackathonPatchOne,
+} from "@hackpsu/react-sdk";
 import { useState } from "react";
 import { DataTable, DataTableColumn } from "@/components/table";
-import {
-  useAllHackathons,
-  useUpdateHackathon,
-  useMarkActiveHackathon,
-  useCreateHackathon,
-} from "@/common/api/hackathon/hook";
-import { HackathonEntity } from "@/common/api/hackathon/entity";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
 export default function HackathonsSettingsPage() {
-  const { data: hackathons = [], refetch } = useAllHackathons();
-  const updateHackathon = useUpdateHackathon();
-  const markActiveHackathon = useMarkActiveHackathon();
-  const createHackathon = useCreateHackathon();
+  const { data: hackathons = [], refetch } = useHackathonGetAll();
+  const updateHackathon = useHackathonPatchOne();
+  const markActiveHackathon = useHackathonMarkActive();
+  const createHackathon = useHackathonCreateOne();
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [formData, setFormData] = useState({
@@ -61,7 +61,7 @@ export default function HackathonsSettingsPage() {
       });
 
       if (activeBool) {
-        await markActiveHackathon.mutateAsync(hack.id);
+        await markActiveHackathon.mutateAsync({ id: hack.id });
       }
     }
 
@@ -73,11 +73,11 @@ export default function HackathonsSettingsPage() {
     if (!formData.name.trim() || !formData.startTime || !formData.endTime) return;
 
     try {
-      await createHackathon.mutateAsync({
+      await createHackathon.mutateAsync({ data: {
         name: formData.name.trim(),
         startTime: new Date(formData.startTime).getTime(),
         endTime: new Date(formData.endTime).getTime(),
-      });
+      } });
       setFormData({ name: "", startTime: "", endTime: "" });
       setShowAddModal(false);
       await refetch();

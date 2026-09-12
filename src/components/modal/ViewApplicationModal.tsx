@@ -1,10 +1,10 @@
 "use client";
 
-import { 
-    OrganizerApplicationEntity,
-    OrganizerTeam,
-    ApplicationStatus
- } from "@/common/api/organizer_applications";
+import {
+  ApplicationStatus,
+  OrganizerApplicationEntity,
+  OrganizerTeam,
+} from "@hackpsu/react-sdk";
 import { Button } from "@/components/ui/button";
 
 interface ViewApplicationModalProps {
@@ -16,11 +16,11 @@ interface ViewApplicationModalProps {
 
 const getStatusColor = (status: ApplicationStatus) => {
   switch (status) {
-    case ApplicationStatus.PENDING:
+    case ApplicationStatus.pending:
       return "text-yellow-600";
-    case ApplicationStatus.ACCEPTED:
+    case ApplicationStatus.accepted:
       return "text-green-600";
-    case ApplicationStatus.REJECTED:
+    case ApplicationStatus.rejected:
       return "text-red-600";
     default:
       return "text-zinc-600";
@@ -36,12 +36,12 @@ export default function ViewApplicationModal({
   if (!application) return null;
 
   const canAcceptFirst =
-    application.firstChoiceStatus === ApplicationStatus.PENDING &&
+    application.firstChoiceStatus === ApplicationStatus.pending &&
     !application.assignedTeam;
 
   const canAcceptSecond =
-    application.firstChoiceStatus === ApplicationStatus.REJECTED &&
-    application.secondChoiceStatus === ApplicationStatus.PENDING &&
+    application.firstChoiceStatus === ApplicationStatus.rejected &&
+    application.secondChoiceStatus === ApplicationStatus.pending &&
     !application.assignedTeam;
 
   return (
@@ -87,14 +87,14 @@ export default function ViewApplicationModal({
             <div>
               <p className="text-zinc-500">First Choice</p>
               <p>{application.firstChoiceTeam}</p>
-              <p className={getStatusColor(application.firstChoiceStatus)}>
+              <p className={getStatusColor(application.firstChoiceStatus ?? ApplicationStatus.pending)}>
                 {application.firstChoiceStatus}
               </p>
             </div>
             <div>
               <p className="text-zinc-500">Second Choice</p>
               <p>{application.secondChoiceTeam}</p>
-              <p className={getStatusColor(application.secondChoiceStatus)}>
+              <p className={getStatusColor(application.secondChoiceStatus ?? ApplicationStatus.pending)}>
                 {application.secondChoiceStatus}
               </p>
             </div>

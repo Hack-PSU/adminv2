@@ -1,7 +1,9 @@
 "use client";
 
+import {
+  RegistrationWithScoreDto,
+} from "@hackpsu/react-sdk";
 import { useMemo } from "react";
-import { RegistrationScoreEntity } from "@/common/api/registration/entity";
 
 const STATUS_CONFIG = [
   { key: "pending", label: "Pending", bg: "bg-yellow-400", text: "text-yellow-800", pill: "bg-yellow-100" },
@@ -13,7 +15,7 @@ const STATUS_CONFIG = [
 ] as const;
 
 interface StatusBreakdownBarProps {
-  data: RegistrationScoreEntity[];
+  data: RegistrationWithScoreDto[];
 }
 
 export default function StatusBreakdownBar({ data }: StatusBreakdownBarProps) {

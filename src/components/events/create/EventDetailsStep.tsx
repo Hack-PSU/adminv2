@@ -1,7 +1,9 @@
 "use client";
 
+import {
+  useLocationGetAll,
+} from "@hackpsu/react-sdk";
 import { EventFormData } from "@/app/events/create/page";
-import { useAllLocations } from "@/common/api/location/hook";
 
 interface EventDetailsStepProps {
   formData: EventFormData;
@@ -16,7 +18,7 @@ export function EventDetailsStep({
   onNext,
   onBack,
 }: EventDetailsStepProps) {
-  const { data: locations = [], isLoading } = useAllLocations();
+  const { data: locations = [], isLoading } = useLocationGetAll();
 
   const handleNext = () => {
     if (formData.name && formData.startTime && formData.endTime) {

@@ -1,16 +1,18 @@
 "use client";
 
-import { DataTable, DataTableColumn } from "@/components/table";
 import {
-  useAllApplications,
-  useAcceptApplication,
-  useRejectApplication,
-} from "@/common/api/organizer_applications";
+  ApplicationStatus,
+  OrganizerApplicationEntity,
+  OrganizerTeam,
+  useHackathonGetAll,
+  useOrganizerApplicationAccept,
+  useOrganizerApplicationGetAll,
+  useOrganizerApplicationReject,
+} from "@hackpsu/react-sdk";
+import { DataTable, DataTableColumn } from "@/components/table";
 import { useMemo, useState } from "react";
 import { Eye, Check, X } from "lucide-react";
-import { OrganizerApplicationEntity, OrganizerTeam, ApplicationStatus } from "@/common/api/organizer_applications";
 import ViewApplicationModal from "@/components/modal/ViewApplicationModal";
-import { useAllHackathons } from "@/common/api/hackathon/hook";
 
 // Hackathon start/end times can be stored in seconds or milliseconds; normalize to ms.
 function normalizeTimestamp(value: number | string | null | undefined) {
@@ -21,16 +23,20 @@ function normalizeTimestamp(value: number | string | null | undefined) {
 }
 
 function statusColorClass(status: ApplicationStatus) {
-  if (status === ApplicationStatus.ACCEPTED) return "text-green-600";
-  if (status === ApplicationStatus.REJECTED) return "text-red-600";
+  if (status === ApplicationStatus.accepted) return "text-green-600";
+  if (status === ApplicationStatus.rejected) return "text-red-600";
   return "text-zinc-900";
 }
 
 export default function OrganizerApplicationsPage() {
-  const {data: applications = [], isLoading, refetch } = useAllApplications();
-  const { data: hackathons = [] } = useAllHackathons();
-  const acceptApplicationMutation = useAcceptApplication();
-  const rejectApplicationMutation = useRejectApplication();
+  const {
+    data: applications = [],
+    isLoading,
+    refetch,
+  } = useOrganizerApplicationGetAll();
+  const { data: hackathons = [] } = useHackathonGetAll();
+  const acceptApplicationMutation = useOrganizerApplicationAccept();
+  const rejectApplicationMutation = useOrganizerApplicationReject();
 
   const lastHackathonEndTime = useMemo(() => {
     // The active hackathon is the upcoming/current one; the "last" hackathon
@@ -46,7 +52,9 @@ export default function OrganizerApplicationsPage() {
   const visibleApplications = useMemo(() => {
     if (lastHackathonEndTime === null) return applications;
     return applications.filter(
-      (app) => new Date(app.createdAt).getTime() > lastHackathonEndTime,
+      (app) =>
+        app.createdAt != null &&
+        new Date(app.createdAt).getTime() > lastHackathonEndTime,
     );
   }, [applications, lastHackathonEndTime]);
   const [selectedApplication, setSelectedApplication] = useState<OrganizerApplicationEntity | null>(null);
@@ -83,7 +91,7 @@ export default function OrganizerApplicationsPage() {
       accessorKey: "firstChoiceTeam",
       header: "First Choice",
       cell: (_, row) => (
-        <span className={statusColorClass(row.firstChoiceStatus)}>
+        <span className={statusColorClass(row.firstChoiceStatus ?? ApplicationStatus.pending)}>
           {row.firstChoiceTeam}
         </span>
       ),
@@ -92,7 +100,7 @@ export default function OrganizerApplicationsPage() {
       accessorKey: "secondChoiceTeam",
       header: "Second Choice",
       cell: (_, row) => (
-        <span className={statusColorClass(row.secondChoiceStatus)}>
+        <span className={statusColorClass(row.secondChoiceStatus ?? ApplicationStatus.pending)}>
           {row.secondChoiceTeam}
         </span>
       ),
@@ -107,12 +115,12 @@ export default function OrganizerApplicationsPage() {
       header: "Actions",
       cell: (_, row) => {
         const canAcceptFirst =
-          row.firstChoiceStatus === ApplicationStatus.PENDING &&
+          row.firstChoiceStatus === ApplicationStatus.pending &&
           !row.assignedTeam;
 
         const canAcceptSecond =
-          row.firstChoiceStatus === ApplicationStatus.REJECTED &&
-          row.secondChoiceStatus === ApplicationStatus.PENDING &&
+          row.firstChoiceStatus === ApplicationStatus.rejected &&
+          row.secondChoiceStatus === ApplicationStatus.pending &&
           !row.assignedTeam;
 
         const firstChoiceTeam = row.firstChoiceTeam as OrganizerTeam;
