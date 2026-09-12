@@ -1,8 +1,10 @@
 "use client";
 
+import {
+  EventType,
+} from "@hackpsu/react-sdk";
 import { useState } from "react";
 import { EventFormData } from "@/app/events/create/page";
-import { EventType } from "@/common/api/event/entity";
 
 interface WorkshopDetailsStepProps {
   formData: EventFormData;

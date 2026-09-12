@@ -1,5 +1,9 @@
 "use client";
 
+import {
+  EventType,
+  useEventCreateOne,
+} from "@hackpsu/react-sdk";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { EventTypeStep } from "@/components/events/create/EventTypeStep";
@@ -7,8 +11,6 @@ import { EventDetailsStep } from "@/components/events/create/EventDetailsStep";
 import { WorkshopDetailsStep } from "@/components/events/create/WorkshopDetailsStep";
 import { IconUploadStep } from "@/components/events/create/IconUploadStep";
 import { ReviewStep } from "@/components/events/create/ReviewStep";
-import { EventType } from "@/common/api/event/entity";
-import { useCreateEvent } from "@/common/api/event/hook";
 
 export interface EventFormData {
   // Event type
@@ -51,7 +53,7 @@ export default function CreateEventPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<EventFormData>(INITIAL_FORM_DATA);
-  const createEventMutation = useCreateEvent();
+  const createEventMutation = useEventCreateOne();
 
   const steps = [
     { title: "Event Type", component: EventTypeStep },
@@ -79,34 +81,37 @@ export default function CreateEventPage() {
 
   const handleSubmit = async () => {
     try {
-      const formDataToSubmit = new FormData();
-      formDataToSubmit.append("name", formData.name);
-      formDataToSubmit.append("type", formData.type);
-      formDataToSubmit.append("description", formData.description);
-      formDataToSubmit.append("locationId", formData.location);
-      formDataToSubmit.append("startTime", new Date(formData.startTime).getTime().toString());
-      formDataToSubmit.append("endTime", new Date(formData.endTime).getTime().toString());
-      formDataToSubmit.append(
-        "fastPass",
-        (formData.type === EventType.food && formData.fastPass).toString(),
-      );
-      
-      // Workshop details (only if workshop type)
-      if (formData.type === EventType.workshop) {
-        formDataToSubmit.append("wsPresenterNames", formData.wsPresenterNames);
-        formDataToSubmit.append("wsSkillLevel", formData.wsSkillLevel);
-        formDataToSubmit.append("wsRelevantSkills", formData.wsRelevantSkills);
-        formData.wsUrls.forEach((url) => {
-          formDataToSubmit.append("wsUrls[]", url);
-        });
-      }
-      
-      // Icon
-      if (formData.icon) {
-        formDataToSubmit.append("icon", formData.icon);
+      // type starts as "" until a type is picked, and the API only accepts the
+      // four EventType values.
+      if (!formData.type) {
+        console.error("Cannot create an event without a type");
+        return;
       }
 
-      await createEventMutation.mutateAsync(formDataToSubmit);
+      // The generated client serialises this into multipart/form-data itself,
+      // so the call site passes a plain object.
+      const isWorkshop = formData.type === EventType.workshop;
+
+      await createEventMutation.mutateAsync({
+        data: {
+          name: formData.name,
+          type: formData.type,
+          description: formData.description,
+          locationId: Number(formData.location),
+          startTime: new Date(formData.startTime).getTime(),
+          endTime: new Date(formData.endTime).getTime(),
+          fastPass: formData.type === EventType.food && formData.fastPass,
+          ...(isWorkshop
+            ? {
+                wsPresenterNames: formData.wsPresenterNames,
+                wsSkillLevel: formData.wsSkillLevel,
+                wsRelevantSkills: formData.wsRelevantSkills,
+                wsUrls: formData.wsUrls.join("|"),
+              }
+            : {}),
+          ...(formData.icon ? { icon: formData.icon } : {}),
+        },
+      });
       router.push("/events");
     } catch (error) {
       console.error("Error creating event:", error);

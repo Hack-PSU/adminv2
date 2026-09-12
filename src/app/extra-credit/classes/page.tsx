@@ -1,19 +1,19 @@
 "use client";
 
+import {
+  Requirements,
+  ExtraCreditClassEntity,
+  extraCreditClassGetQualifiedList,
+  useExtraCreditAssignmentGetAll,
+  useExtraCreditClassCreateOne,
+  useExtraCreditClassDeleteOne,
+  useExtraCreditClassGetAll,
+} from "@hackpsu/react-sdk";
 import { DataTable, DataTableColumn } from "@/components/table";
 import { Button } from "@/components/ui/button";
-import {
-  useAllExtraCreditClasses,
-  useAllExtraCreditAssignments,
-  useCreateExtraCreditClass,
-  useDeleteExtraCreditClass,
-
-} from "@/common/api/extra-credit/hook";
-import { ExtraCreditClassEntity } from "@/common/api/extra-credit/entity";
 import { Plus, Download } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { getExtraCreditClassList } from "@/common/api/extra-credit/provider";
 
 // Extended entity with hacker count
 interface ExtraCreditClassWithCount extends ExtraCreditClassEntity {
@@ -21,10 +21,10 @@ interface ExtraCreditClassWithCount extends ExtraCreditClassEntity {
 }
 
 export default function ManageClassesPage() {
-  const { data: classes = [], isLoading: classesLoading, refetch } = useAllExtraCreditClasses();
-  const { data: assignments = [], isLoading: assignmentsLoading } = useAllExtraCreditAssignments();
-  const createClassMutation = useCreateExtraCreditClass();
-  const deleteClassMutation = useDeleteExtraCreditClass();
+  const { data: classes = [], isLoading: classesLoading, refetch } = useExtraCreditClassGetAll();
+  const { data: assignments = [], isLoading: assignmentsLoading } = useExtraCreditAssignmentGetAll();
+  const createClassMutation = useExtraCreditClassCreateOne();
+  const deleteClassMutation = useExtraCreditClassDeleteOne();
   const [showAddModal, setShowAddModal] = useState(false);
   const [newClassName, setNewClassName] = useState("");
   const isCreating = createClassMutation.isPending;
@@ -48,7 +48,7 @@ export default function ManageClassesPage() {
 
   const handleExport = async (classId: number) => {
     try {
-      const result = await getExtraCreditClassList(classId);
+      const result = await extraCreditClassGetQualifiedList(classId);
       const names: string[] = result.names ?? [];
 
       // CSV content (escape quotes just in case)
@@ -95,7 +95,9 @@ export default function ManageClassesPage() {
     const trimmedName = newClassName.trim();
     if (!trimmedName) return;
     try {
-      await createClassMutation.mutateAsync({ name: trimmedName });
+      await createClassMutation.mutateAsync({
+        data: { name: trimmedName, requirement: Requirements["check-in"] },
+      });
       toast.success("Class added.");
       closeModal();
       await refetch();
@@ -107,7 +109,7 @@ export default function ManageClassesPage() {
   const handleDelete = async (ids: Array<string | number>) => {
     try {
       await Promise.all(
-        ids.map((id) => deleteClassMutation.mutateAsync(Number(id))),
+        ids.map((id) => deleteClassMutation.mutateAsync({ id: Number(id) })),
       );
       toast.success("Classes deleted.");
     } catch (error) {

@@ -1,22 +1,22 @@
 "use client";
 
+import {
+  LocationEntity,
+  useLocationCreateOne,
+  useLocationDeleteOne,
+  useLocationGetAll,
+  useLocationPatchOne,
+} from "@hackpsu/react-sdk";
 import { FormEvent, useState } from "react";
 import { DataTable, DataTableColumn } from "@/components/table";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import {
-  useAllLocations,
-  useCreateLocation,
-  useDeleteLocation,
-  useUpdateLocation,
-} from "@/common/api/location/hook";
-import { LocationEntity } from "@/common/api/location/entity";
 
 export default function LocationsPage() {
-  const { data: locations = [], isLoading, refetch } = useAllLocations();
-  const createLocationMutation = useCreateLocation();
-  const deleteLocationMutation = useDeleteLocation();
-  const updateLocationMutation = useUpdateLocation();
+  const { data: locations = [], isLoading, refetch } = useLocationGetAll();
+  const createLocationMutation = useLocationCreateOne();
+  const deleteLocationMutation = useLocationDeleteOne();
+  const updateLocationMutation = useLocationPatchOne();
 
   const isCreating = createLocationMutation.isPending;
   const [showAddModal, setShowAddModal] = useState(false);
@@ -46,10 +46,10 @@ export default function LocationsPage() {
   const handleAddLocation = async (event: FormEvent) => {
     event.preventDefault();
     if (!name.trim() || !capacity.trim()) return;
-    await createLocationMutation.mutateAsync({
+    await createLocationMutation.mutateAsync({ data: {
       name: name.trim(),
       capacity: Number(capacity),
-    });
+    } });
     closeModal();
     await refetch();
   };
@@ -83,7 +83,7 @@ export default function LocationsPage() {
 
   const handleDelete = async (ids: Array<string | number>) => {
     await Promise.all(
-      ids.map((id) => deleteLocationMutation.mutateAsync(Number(id))),
+      ids.map((id) => deleteLocationMutation.mutateAsync({ id: Number(id) })),
     );
     await refetch();
   };

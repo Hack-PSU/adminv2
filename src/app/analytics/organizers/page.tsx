@@ -1,10 +1,13 @@
 "use client";
 
-import { AnalyticsScansResponse, useOrganizerScans } from "@/common/api/analytics";
+import {
+  AnalyticsScansResponse,
+  useAnalyticsGetOrganizerScans,
+} from "@hackpsu/react-sdk";
 import { DataTableColumn, DataTable } from "@/components/table";
 
 export default function OrganizerPage() {
-  const { data: organizers = [], isLoading, refetch } = useOrganizerScans();
+  const { data: organizers = [], isLoading, refetch } = useAnalyticsGetOrganizerScans();
 
   // Define the columns for organizers
   const columns: DataTableColumn<AnalyticsScansResponse>[] = [

@@ -1,17 +1,17 @@
 "use client";
 
+import {
+  EventEntityResponse,
+  EventType,
+  useEventDeleteOne,
+  useEventGetAll,
+  useEventPatchOne,
+  useLocationGetAll,
+} from "@hackpsu/react-sdk";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { DataTable, DataTableColumn } from "@/components/table";
-import {
-  useAllEvents,
-  useDeleteEvent,
-  useUpdateEvent,
-} from "@/common/api/event/hook";
-import { EventEntityResponse } from "@/common/api/event/entity";
 import { Pencil, Trash2, Plus } from "lucide-react";
-import { EventType } from "@/common/api/event/entity";
-import { useAllLocations } from "@/common/api/location/hook";
 import { Button } from "@/components/ui/button";
 
 interface EventFormData {
@@ -30,10 +30,10 @@ interface EventFormData {
 
 export default function EventsPage() {
   const router = useRouter();
-  const { data: events = [], isLoading, refetch } = useAllEvents();
-  const { data: locations = [] } = useAllLocations();
-  const deleteEventMutation = useDeleteEvent();
-  const updateEventMutation = useUpdateEvent();
+  const { data: events = [], isLoading, refetch } = useEventGetAll();
+  const { data: locations = [] } = useLocationGetAll();
+  const deleteEventMutation = useEventDeleteOne();
+  const updateEventMutation = useEventPatchOne();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventEntityResponse | null>(null);
@@ -72,30 +72,34 @@ export default function EventsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const formDataToSubmit = new FormData();
-    formDataToSubmit.append("name", formData.name);
-    formDataToSubmit.append("type", formData.type);
-    formDataToSubmit.append("description", formData.description);
-    formDataToSubmit.append("locationId", formData.locationId);
-    formDataToSubmit.append("startTime", new Date(formData.startTime).getTime().toString());
-    formDataToSubmit.append("endTime", new Date(formData.endTime).getTime().toString());
-    
-    if (formData.type === EventType.workshop) {
-      formDataToSubmit.append("wsPresenterNames", formData.wsPresenterNames);
-      formDataToSubmit.append("wsSkillLevel", formData.wsSkillLevel);
-      formDataToSubmit.append("wsRelevantSkills", formData.wsRelevantSkills);
-      formData.wsUrls.forEach((url) => {
-        formDataToSubmit.append("wsUrls[]", url);
-      });
+    if (!formData.type) {
+      console.error("Cannot save an event without a type");
+      return;
     }
-    
-    if (formData.icon) {
-      formDataToSubmit.append("icon", formData.icon);
-    }
+
+    // The generated client serialises this into multipart/form-data itself.
+    const isWorkshop = formData.type === EventType.workshop;
+    const payload = {
+      name: formData.name,
+      type: formData.type,
+      description: formData.description,
+      locationId: Number(formData.locationId),
+      startTime: new Date(formData.startTime).getTime(),
+      endTime: new Date(formData.endTime).getTime(),
+      ...(isWorkshop
+        ? {
+            wsPresenterNames: formData.wsPresenterNames,
+            wsSkillLevel: formData.wsSkillLevel,
+            wsRelevantSkills: formData.wsRelevantSkills,
+            wsUrls: formData.wsUrls.join("|"),
+          }
+        : {}),
+      ...(formData.icon ? { icon: formData.icon } : {}),
+    };
 
     try {
       if (editingEvent) {
-        await updateEventMutation.mutateAsync({ id: editingEvent.id, data: formDataToSubmit });
+        await updateEventMutation.mutateAsync({ id: editingEvent.id, data: payload });
       }
       setIsModalOpen(false);
       await refetch();
@@ -106,7 +110,7 @@ export default function EventsPage() {
 
   const handleDeleteSingle = async (id: string) => {
     if (confirm("Are you sure you want to delete this event?")) {
-      await deleteEventMutation.mutateAsync(id);
+      await deleteEventMutation.mutateAsync({ id: id });
       await refetch();
     }
   };

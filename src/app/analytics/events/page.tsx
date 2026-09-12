@@ -1,9 +1,11 @@
 "use client";
 
+import {
+  AnalyticsEventsResponse,
+  useAnalyticsGetEventsAnalytics,
+} from "@hackpsu/react-sdk";
 import { useMemo } from "react";
 import { DataTable, DataTableColumn } from "@/components/table";
-import { useEventsAnalytics } from "@/common/api/analytics/hook";
-import { AnalyticsEventsResponse } from "@/common/api/analytics/entity";
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
   checkIn: "Check-In",
@@ -17,7 +19,7 @@ function formatEventType(value: string) {
 }
 
 export default function AnalyticsEventsPage() {
-  const { data = [], isLoading, isError, refetch } = useEventsAnalytics();
+  const { data = [], isLoading, isError, refetch } = useAnalyticsGetEventsAnalytics();
 
   const sortedData = useMemo(
     () => [...data].sort((a, b) => b.count - a.count),

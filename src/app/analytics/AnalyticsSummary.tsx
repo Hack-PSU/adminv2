@@ -1,13 +1,16 @@
 "use client";
 
+import {
+  EventType,
+  useAnalyticsGetSummary,
+  useEventGetAll,
+  useHackathonGetAll,
+  useHackathonGetForStatic,
+  useRegistrationGetAll,
+  useScanGetAll,
+  useUserGetAll,
+} from "@hackpsu/react-sdk";
 import { useEffect, useMemo, useState } from "react";
-import { useAnalyticsSummary } from "@/common/api/analytics/hook";
-import { useAllHackathons } from "@/common/api/hackathon/hook";
-import { useAllRegistrations } from "@/common/api/registration/hook";
-import { useAllScans } from "@/common/api/scan/hook";
-import { useAllUsers } from "@/common/api/user/hook";
-import { useActiveHackathonForStatic } from "@/common/api/hackathon/hook";
-import { EventType, useAllEvents } from "@/common/api/event";
 import {
   ChartContainer,
   CheckInHeatmap,
@@ -146,35 +149,35 @@ export default function AnalyticsSummary() {
     data: summary,
     isLoading: summaryLoading,
     isError: summaryError,
-  } = useAnalyticsSummary();
+  } = useAnalyticsGetSummary();
   const {
     data: hackathons = [],
     isLoading: hackathonsLoading,
     isError: hackathonsError,
-  } = useAllHackathons();
+  } = useHackathonGetAll();
   const {
     data: allRegistrations = [],
     isLoading: registrationsLoading,
     isError: registrationsError,
-  } = useAllRegistrations(true);
+  } = useRegistrationGetAll({ all: true });
   const {
     data: users = [],
     isLoading: usersLoading,
     isError: usersError,
-  } = useAllUsers();
+  } = useUserGetAll();
   const [selectedHackathonId, setSelectedHackathonId] = useState<string>("");
   const [checkInBucketMinutes, setCheckInBucketMinutes] = useState("30");
   const {
     data: scans = [],
     isLoading: scansLoading,
     isError: scansError,
-  } = useAllScans(selectedHackathonId || undefined);
+  } = useScanGetAll({ hackathonId: selectedHackathonId || undefined });
   const {
     data: events = [],
     isLoading: eventsLoading,
     isError: eventsError,
-  } = useAllEvents(selectedHackathonId || undefined);
-  const { data: activeHackathon } = useActiveHackathonForStatic();
+  } = useEventGetAll({ hackathonId: selectedHackathonId || undefined });
+  const { data: activeHackathon } = useHackathonGetForStatic();
 
   const isLoading =
     summaryLoading ||

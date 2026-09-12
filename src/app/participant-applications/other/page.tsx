@@ -1,16 +1,21 @@
 "use client";
 
+import {
+  ApplicationStatus,
+  RegistrationWithScoreDto,
+  useRegistrationGetOtherRegistrationsWithScores,
+  useRegistrationUpdateApplicationStatus,
+  useRegistrationUpdateApplicationStatusBulk,
+} from "@hackpsu/react-sdk";
 import { DataTable, DataTableColumn } from "@/components/table";
-import { useOtherRegistrationScores, useUpdateApplicationStatus, useUpdateApplicationStatusBulk } from "@/common/api/registration/hook";
-import { RegistrationScoreEntity } from "@/common/api/registration/entity";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ViewParticipantApplicationModal from "@/components/modal/ViewParticipantApplicationModal";
 
 export default function OtherApplicationsPage() {
-  const { data: applicationsRaw = [], isLoading, refetch } = useOtherRegistrationScores();
-  const [selectedApplication, setSelectedApplication] = useState<RegistrationScoreEntity | null>(null);
+  const { data: applicationsRaw = [], isLoading, refetch } = useRegistrationGetOtherRegistrationsWithScores();
+  const [selectedApplication, setSelectedApplication] = useState<RegistrationWithScoreDto | null>(null);
   const [pendingStatusUpdate, setPendingStatusUpdate] = useState<{ id: number; status: string } | null>(null);
   const [selectedRows, setSelectedRows] = useState<Array<string | number>>([]);
   const [pendingBulkStatus, setPendingBulkStatus] = useState<{ ids: string[]; status: string } | null>(null);
@@ -92,16 +97,10 @@ export default function OtherApplicationsPage() {
   }, [selectedRows, sortedApplications]);
 
   // Create mutation hook with pending status
-  const updateStatusMutation = useUpdateApplicationStatus(
-    pendingStatusUpdate?.id || 0,
-    pendingStatusUpdate?.status || ""
-  );
+  const updateStatusMutation = useRegistrationUpdateApplicationStatus();
 
   // Bulk update mutation
-  const bulkUpdateMutation = useUpdateApplicationStatusBulk(
-    pendingBulkStatus?.ids || [],
-    pendingBulkStatus?.status || ""
-  );
+  const bulkUpdateMutation = useRegistrationUpdateApplicationStatusBulk();
 
   // Use refs to access latest mutation and refetch without causing re-runs
   const bulkUpdateMutationRef = useRef(bulkUpdateMutation);
@@ -112,7 +111,7 @@ export default function OtherApplicationsPage() {
     refetchRef.current = refetch;
   }, [bulkUpdateMutation, refetch]);
 
-  const columns: DataTableColumn<RegistrationScoreEntity>[] = [
+  const columns: DataTableColumn<RegistrationWithScoreDto>[] = [
     {
       accessorKey: "firstName",
       header: "Name",
@@ -194,7 +193,10 @@ export default function OtherApplicationsPage() {
   const handleStatusUpdate = async (id: number, status: string) => {
     setPendingStatusUpdate({ id, status });
     try {
-      await updateStatusMutation.mutateAsync();
+      await updateStatusMutation.mutateAsync({
+        userId: String(pendingStatusUpdate!.id),
+        data: { status: pendingStatusUpdate!.status as ApplicationStatus },
+      });
       await refetch();
       setSelectedApplication(null);
     } finally {
@@ -218,7 +220,12 @@ export default function OtherApplicationsPage() {
     
     const performUpdate = async () => {
       try {
-        await bulkUpdateMutationRef.current.mutateAsync();
+        await bulkUpdateMutationRef.current.mutateAsync({
+          data: {
+            userIds: pendingBulkStatus!.ids,
+            status: pendingBulkStatus!.status as ApplicationStatus,
+          },
+        });
         await refetchRef.current();
         setSelectedRows([]);
         setBulkUpdateModal({ isOpen: false, isLoading: false });
@@ -350,7 +357,7 @@ export default function OtherApplicationsPage() {
           Update Status ({selectedRows.length})
         </Button>
       </div>
-      <DataTable<RegistrationScoreEntity>
+      <DataTable<RegistrationWithScoreDto>
         data={sortedApplications}
         columns={columns}
         onRefresh={handleRefresh}

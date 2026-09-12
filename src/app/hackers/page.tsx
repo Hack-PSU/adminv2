@@ -1,17 +1,17 @@
 "use client";
 
-import { DataTable, DataTableColumn } from "@/components/table";
 import {
-  useAllUsers,
-  useDeleteUser,
-  useUpdateUser,
-} from "@/common/api/user/hook";
-import { UserEntity } from "@/common/api/user/entity";
+  UserEntity,
+  useUserDeleteOne,
+  useUserGetAll,
+  useUserPatchOne,
+} from "@hackpsu/react-sdk";
+import { DataTable, DataTableColumn } from "@/components/table";
 
 export default function HackersPage() {
-  const { data: users = [], isLoading, refetch } = useAllUsers(true);
-  const deleteUserMutation = useDeleteUser();
-  const updateUserMutation = useUpdateUser();
+  const { data: users = [], isLoading, refetch } = useUserGetAll({ active: true });
+  const deleteUserMutation = useUserDeleteOne();
+  const updateUserMutation = useUserPatchOne();
 
   // Define columns - all static (not editable)
   const columns: DataTableColumn<UserEntity>[] = [
@@ -40,7 +40,7 @@ export default function HackersPage() {
   const handleDelete = async (ids: Array<string | number>) => {
     // Delete all selected users
     await Promise.all(
-      ids.map((id) => deleteUserMutation.mutateAsync(String(id))),
+      ids.map((id) => deleteUserMutation.mutateAsync({ id: String(id) })),
     );
     // Refresh the list after deletion
     await refetch();

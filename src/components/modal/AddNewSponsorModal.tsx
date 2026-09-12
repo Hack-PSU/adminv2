@@ -1,11 +1,13 @@
 "use client";
 
+import {
+  useSponsorCreateOne,
+} from "@hackpsu/react-sdk";
 import { 
   Controller, 
   FormProvider, 
   useForm 
 } from "react-hook-form";
-import { useCreateSponsor } from "@/common/api/sponsor/hook";
 import Select from "react-select";
 import { Button } from "../ui/button";
 import Dropzone from "../ui/dropzone";
@@ -80,7 +82,7 @@ export default function AddNewSponsorModal({
         order: totalSponsors
       }
     });
-    const createSponsorMutation = useCreateSponsor();
+    const createSponsorMutation = useSponsorCreateOne();
     const isCreating = createSponsorMutation.isPending;
     const { register, control, watch, handleSubmit, setValue } = methods;
 
@@ -98,17 +100,18 @@ export default function AddNewSponsorModal({
     const handleAddSponsorship = async(data: IFormInput) => {
       if (!name.trim() || !website.trim() || (!lightLogo && !darkLogo)) return;
       
-      const formData = new FormData();
-      formData.append("name", data.name.trim());
-      formData.append("level", data.level.value);
-      formData.append("sponsorType", data.sponsorType.value);
-      formData.append("link", data.website);
-      formData.append("order", String(data.order));
-      if (data.lightLogo) formData.append("lightLogo", data.lightLogo);
-      if (data.darkLogo) formData.append("darkLogo", data.darkLogo);
+      const payload = {
+        name: data.name.trim(),
+        level: data.level.value,
+        sponsorType: data.sponsorType.value,
+        link: data.website,
+        order: Number(data.order),
+        ...(data.lightLogo ? { lightLogo: data.lightLogo } : {}),
+        ...(data.darkLogo ? { darkLogo: data.darkLogo } : {}),
+      };
 
       try {
-        await createSponsorMutation.mutateAsync(formData);
+        await createSponsorMutation.mutateAsync({ data: payload });
         closeModal();
       } catch (error) {
         console.error("Failed to add sponsor:", error)

@@ -1,9 +1,9 @@
 "use client";
 
-import { DataTable, DataTableColumn } from "@/components/table";
 import {
-  useAllExtraCreditAssignments,
-} from "@/common/api/extra-credit/hook";
+  useExtraCreditAssignmentGetAll,
+} from "@hackpsu/react-sdk";
+import { DataTable, DataTableColumn } from "@/components/table";
 import { useMemo } from "react";
 
 // Flattened assignment showing each hacker with their assigned class
@@ -15,7 +15,7 @@ interface HackerAssignment {
 }
 
 export default function ManageAssignmentsPage() {
-  const { data: assignments = [], isLoading: assignmentsLoading, refetch } = useAllExtraCreditAssignments();
+  const { data: assignments = [], isLoading: assignmentsLoading, refetch } = useExtraCreditAssignmentGetAll();
 
   // Flatten the data: each row is a hacker with their assigned class
   const hackerAssignments = useMemo<HackerAssignment[]>(() => {

@@ -1,12 +1,12 @@
 "use client";
+import {
+  SponsorEntity,
+  useSponsorDeleteOne,
+  useSponsorGetAll,
+  useSponsorPatchOne,
+} from "@hackpsu/react-sdk";
 import { useState } from "react";
 import { DataTable, DataTableColumn } from "@/components/table";
-import {
-  useAllSponsors,
-  useDeleteSponsor,
-  useUpdateSponsor,
-} from "@/common/api/sponsor/hook";
-import { SponsorEntity } from "@/common/api/sponsor/entity";
 import { Button } from "@/components/ui/button";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import AddNewSponsorModal from "@/components/modal/AddNewSponsorModal";
@@ -50,9 +50,9 @@ const SponsorTypeOptions: SponsorTypeOption[] = [
   { value: SponsorTypes.PARTNER, label: "Event Partner" },
 ];
 export default function SponsorshipPage() {
-  const { data: sponsors = [], isLoading, refetch } = useAllSponsors();
-  const deleteSponsorMutation = useDeleteSponsor();
-  const updateSponsorMutation = useUpdateSponsor();
+  const { data: sponsors = [], isLoading, refetch } = useSponsorGetAll();
+  const deleteSponsorMutation = useSponsorDeleteOne();
+  const updateSponsorMutation = useSponsorPatchOne();
 
   // Modal specific
   const [showAddModal, setShowAddModal] = useState(false);
@@ -141,7 +141,7 @@ export default function SponsorshipPage() {
   const confirmDelete = async () => {
     if (!deletingSponsor) return;
     try {
-      await deleteSponsorMutation.mutateAsync(deletingSponsor.id);
+      await deleteSponsorMutation.mutateAsync({ id: deletingSponsor.id });
       setDeletingSponsor(null);
       await refetch();
     } catch (error) {
