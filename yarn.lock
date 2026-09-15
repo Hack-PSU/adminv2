@@ -6009,9 +6009,9 @@ react-dropzone@^14.3.8:
     prop-types "^15.8.1"
 
 react-hook-form@^7.71.1:
-  version "7.72.0"
-  resolved "https://registry.npmjs.org/react-hook-form/-/react-hook-form-7.72.0.tgz"
-  integrity sha512-V4v6jubaf6JAurEaVnT9aUPKFbNtDgohj5CIgVGyPHvT9wRx5OZHVjz31GsxnPNI278XMu+ruFz+wGOscHaLKw==
+  version "7.88.0"
+  resolved "https://registry.yarnpkg.com/react-hook-form/-/react-hook-form-7.88.0.tgz#887e669339ff940a5a5cd1d0d00055954d05c2a9"
+  integrity sha512-QRaLOWhX93YCnMiRfnOFRSwWXZNt8qhm2JTZwypoDvKpSffTJHmpzMXt8U6PV5UThvL3IiiLDUWe2nHMtz6Mmw==
 
 react-is@^16.13.1, react-is@^16.7.0:
   version "16.13.1"
