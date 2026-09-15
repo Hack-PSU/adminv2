@@ -8,7 +8,7 @@ export default function Home() {
 
   useEffect(() => {
     // Redirect to hackers page
-    router.push("/hackers");
+    router.push("/analytics");
   }, [router]);
 
   return <section className="space-y-4"></section>;

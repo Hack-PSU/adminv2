@@ -21,7 +21,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { label: "Hackers", href: "/hackers", icon: Users },
   { label: "Events", href: "/events", icon: CalendarDays },
   { label: "Locations", href: "/locations", icon: MapPin },
   { label: "Participant Applications", href: "/participant-applications/penn-state", icon: FileUser },
