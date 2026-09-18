@@ -19,7 +19,9 @@ enum SponsorLevels {
   SILVER = "silver",
   GOLD = "gold",
   PLATINUM = "platinum",
-  EMERALD = "emerald",
+  // EMERALD = "emerald",
+  DIAMOND = "diamond",
+  SAPPHIRE = "sapphire",
 }
 
 enum SponsorTypes {
@@ -42,7 +44,9 @@ const SponsorLevelOptions: SponsorOption[] = [
   { value: SponsorLevels.SILVER, label: "Silver" },
   { value: SponsorLevels.GOLD, label: "Gold" },
   { value: SponsorLevels.PLATINUM, label: "Platinum" },
-  { value: SponsorLevels.EMERALD, label: "Emerald" },
+  // { value: SponsorLevels.EMERALD, label: "Emerald" },
+  { value: SponsorLevels.DIAMOND, label: "Diamond" },
+  { value: SponsorLevels.SAPPHIRE, label: "Sapphire" },
 ];
 
 const SponsorTypeOptions: SponsorTypeOption[] = [
