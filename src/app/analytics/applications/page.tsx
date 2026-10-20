@@ -1,7 +1,10 @@
 "use client";
 
+import { useMemo, useState } from "react";
+import { keepPreviousData } from "@tanstack/react-query";
 import {
   useAnalyticsGetApplicationAnalytics,
+  useHackathonGetAll,
 } from "@hackpsu/react-sdk";
 import {
   UserCheck,
@@ -119,32 +122,88 @@ function MetricsSection({
 }
 
 export default function ApplicationsAnalyticsPage() {
-  const { data, isLoading, isError } = useAnalyticsGetApplicationAnalytics();
-  
+  const {
+    data: hackathons = [],
+    isLoading: hackathonsLoading,
+    isError: hackathonsError,
+  } = useHackathonGetAll();
+  const [selectedHackathonId, setSelectedHackathonId] = useState<string>("");
 
-  if (isLoading) {
-    return (
+  // Newest hackathon first
+  const orderedHackathons = useMemo(
+    () => [...hackathons].sort((a, b) => b.startTime - a.startTime),
+    [hackathons],
+  );
+
+  // Default to the active hackathon until the user picks one
+  const effectiveHackathonId =
+    selectedHackathonId ||
+    hackathons.find((hackathon) => hackathon.active)?.id ||
+    "";
+
+  // Wait for the hackathon list so we don't fetch the active hackathon twice;
+  // if the list fails to load, fall back to the API's active-hackathon default.
+  const { data, isLoading, isError, isFetching } =
+    useAnalyticsGetApplicationAnalytics(
+      effectiveHackathonId ? { hackathonId: effectiveHackathonId } : undefined,
+      {
+        query: {
+          enabled: !hackathonsLoading,
+          placeholderData: keepPreviousData,
+        },
+      },
+    );
+
+  let content: React.ReactNode;
+  if (hackathonsLoading || isLoading) {
+    content = (
       <div className="flex items-center justify-center py-12 text-zinc-500">
         Loading application analytics...
       </div>
     );
-  }
-
-  if (isError || !data) {
-    return (
+  } else if (isError || !data) {
+    content = (
       <div className="rounded-2xl border border-dashed border-rose-200 bg-rose-50 px-6 py-10 text-center text-sm text-rose-600">
         Unable to load application analytics. Please try again.
       </div>
     );
+  } else {
+    content = (
+      <div
+        className={`space-y-8 transition-opacity ${isFetching ? "opacity-60" : ""}`}
+      >
+        <MetricsSection title="Penn State" data={data.pennState} />
+        <MetricsSection title="Other" data={data.other} />
+      </div>
+    );
   }
-
-    
 
   return (
     <div className="space-y-8">
-      <MetricsSection title="Penn State" data={data.pennState} />
-      <MetricsSection title="Other" data={data.other} />
-      
+      {!hackathonsError && orderedHackathons.length > 0 ? (
+        <div className="flex items-center gap-2">
+          <label
+            htmlFor="applications-hackathon-filter"
+            className="text-sm font-medium text-zinc-600"
+          >
+            Hackathon
+          </label>
+          <select
+            id="applications-hackathon-filter"
+            value={effectiveHackathonId}
+            onChange={(e) => setSelectedHackathonId(e.target.value)}
+            className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+          >
+            {orderedHackathons.map((hackathon) => (
+              <option key={hackathon.id} value={hackathon.id}>
+                {hackathon.name}
+                {hackathon.active ? " (Active)" : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : null}
+      {content}
     </div>
   );
 }
