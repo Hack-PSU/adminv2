@@ -38,16 +38,24 @@ export default function OrganizerApplicationsPage() {
   const acceptApplicationMutation = useOrganizerApplicationAccept();
   const rejectApplicationMutation = useOrganizerApplicationReject();
 
+  // Captured once on mount; Date.now() can't be called directly during render.
+  const [now] = useState(() => Date.now());
+
   const lastHackathonEndTime = useMemo(() => {
-    // The active hackathon is the upcoming/current one; the "last" hackathon
-    // is the most recent one that has already concluded.
+    // The "last" hackathon is the most recent one that has already concluded.
+    // Inactive hackathons are always past ones; the active (current) hackathon
+    // only counts once its end time has passed, so that applications submitted
+    // after it ends are treated as being for the next hackathon.
     const endedHackathons = hackathons
-      .filter((h) => !h.active)
-      .map((h) => normalizeTimestamp(h.endTime))
-      .filter((end): end is number => end !== null);
+      .map((h) => ({ active: h.active, end: normalizeTimestamp(h.endTime) }))
+      .filter(
+        (h): h is { active: boolean; end: number } =>
+          h.end !== null && (!h.active || h.end <= now),
+      )
+      .map((h) => h.end);
     if (endedHackathons.length === 0) return null;
     return Math.max(...endedHackathons);
-  }, [hackathons]);
+  }, [hackathons, now]);
 
   const visibleApplications = useMemo(() => {
     if (lastHackathonEndTime === null) return applications;
