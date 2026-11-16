@@ -27,6 +27,7 @@ const NAV_ITEMS = [
   { label: "Organizer Applications", href: "/organizer-applications", icon: FileText },
   { label: "Extra Credit", href: "/extra-credit/classes", icon: Star },
   { label: "Sponsorship", href: "/sponsorship", icon: Handshake },
+  { label: "Challenges", href: "/challenges", icon: Trophy },
   { label: "Analytics", href: "/analytics", icon: BarChart2 },
   { label: "Settings", href: "/settings/members", icon: Settings },
 ] as const;
